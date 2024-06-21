@@ -1,6 +1,11 @@
 <script setup>
 
-console.log(navigator.usb)
+if (navigator.usb) {
+  console.log(navigator.usb)
+  console.log(navigator.usb.getDevices())
+} else {
+  console.log('This browser does not support WebUSB API.')
+}
 
 </script>
 
