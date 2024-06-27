@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import type { UseMouseEventExtractor } from '@vueuse/core'
 import { cn } from './lib/utils';
-
-const supported = computed(() => {
-  return "serial" in navigator && "mediaDevices" in navigator
-})
-
 const webcamConstraints = { audio: true, video: true }
 
 const serial = ref<SerialPort>()
@@ -17,22 +12,28 @@ const mouse = reactive(useMouse({ target: camera, type: extractor }))
 const lastMousePressState = ref(0)
 const { pressed } = useMousePressed({ target: camera })
 
-watch(mouse, ({ x, y }) => {
+watch(pressed, (isPressed) => {
+  if (!isPressed) lastMousePressState.value = 0
+})
 
-  let data = new Uint8Array(12)
-  const LEN = MOUSE_ABS_ACTION_PREFIX.length // Uint is 0-index
-  data.set(MOUSE_ABS_ACTION_PREFIX, 0) // 0 - 5
-  data.set([pressed.value ? lastMousePressState.value : 0], LEN)
-  data.set([x & 0xFF, (x >> 8) & 0xFF], LEN + 1)
-  data.set([y & 0xFF, (y >> 8) & 0xFF], LEN + 3)
-  data.set([0 & 0xFF], LEN + 5)
+function handleMouse(x = mouse.x, y = mouse.y, button = pressed.value ? lastMousePressState.value : 0) {
+  const relativeX = (x / camera.value.clientWidth) * 4096
+  const relativeY = (y / camera.value.clientHeight) * 4096
+
+  const data = new Uint8Array(12)
+  data.set(MOUSE_ABS_ACTION_PREFIX, 0)
+  data.set([button], MOUSE_ABS_ACTION_PREFIX.length)
+  data.set([relativeX & 0xFF, (relativeX >> 8) & 0xFF], MOUSE_ABS_ACTION_PREFIX.length + 1)
+  data.set([relativeY & 0xFF, (relativeY >> 8) & 0xFF], MOUSE_ABS_ACTION_PREFIX.length + 3)
+  data.set([0 & 0xFF], MOUSE_ABS_ACTION_PREFIX.length + 5)
 
   if (serial.value?.writable && writer) {
-    const newRes = checksum(data)
-    const hex = newRes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
-    console.log(`Writing ${hex}...`)
-    writer.value?.write(newRes)
+    writer.value?.write(checksum(data))
   }
+}
+
+watch(mouse, ({ x, y }) => {
+  handleMouse(x, y)
 }, { deep: true })
 
 const relativeMouse = ref(false)
@@ -90,7 +91,7 @@ async function refreshSerialDevices(force: boolean) {
       writer.value = serial.value.writable.getWriter()
       writer.value.write(checksum(SERIAL_CMD_GET_PARA_CFG))
 
-      while (writer.value.readable) {
+      while (serial.value?.readable) {
         reader.value = serial.value.readable.getReader();
         try {
           while (true) {
@@ -126,8 +127,9 @@ function keypress(data: KeyboardEvent) {
 }
 
 function click({ button }: MouseEvent): void {
-  lastMousePressState.value = getMouseButton(button)
-  console.log(getMouseButton(button))
+  const qtClick = getMouseButton(button)
+  lastMousePressState.value = qtClick
+  handleMouse(mouse.x, mouse.y, qtClick)
 }
 
 function getMouseButton(button: number): number {
@@ -169,6 +171,7 @@ function getMouseButton(button: number): number {
       </div>
       <div class="ml-auto flex w-full space-x-2 sm:justify-end">
         <div class="hidden space-x-2 md:flex">
+          <Unsupported />
           <Button variant="secondary" @click="refreshMediaDevices">
             <template v-if="!camera">
               Request Camera
@@ -189,8 +192,11 @@ function getMouseButton(button: number): number {
       </div>
     </div>
     <div class="container flex h-full flex-col space-y-4" @keydown.prevent="keypress">
-      <video ref="camera" class="flex-1" autoplay playsinline @click.left.prevent="click" @click.middle.prevent="click"
-        @click.right.prevent="click" />
+      <AspectRatio :ratio="16 / 9" class="bg-muted">
+        <video ref="camera" class="flex-1" autoplay playsinline @click.left.prevent="click"
+          @click.middle.prevent="click" @click.right.prevent="click" />
+      </AspectRatio>
+
     </div>
   </div>
 </template>
