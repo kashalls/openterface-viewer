@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import type { UseMouseEventExtractor } from '@vueuse/core'
 import { cn } from './lib/utils';
-const MOUSE_ABS_ACTION_PREFIX = new Uint8Array([0x57, 0xAB, 0x00, 0x04, 0x07, 0x02]);
-const MOUSE_REL_ACTION_PREFIX = new Uint8Array([0x57, 0xAB, 0x00, 0x05, 0x05, 0x01]);
-const CMD_GET_PARA_CFG = new Uint8Array([0x57, 0xAB, 0x00, 0x08, 0x00]);
-// const CMD_RESET = new Uint8Array([0x57, 0xAB, 0x00, 0x0F, 0x00]);
+
 const supported = computed(() => {
   return "serial" in navigator && "mediaDevices" in navigator
 })
@@ -12,7 +9,8 @@ const supported = computed(() => {
 const webcamConstraints = { audio: true, video: true }
 
 const serial = ref<SerialPort>()
-const writer = ref()
+const writer = ref<WritableStreamDefaultWriter>()
+const reader = ref<ReadableStreamDefaultReader>()
 const camera = ref()
 const extractor: UseMouseEventExtractor = (event) => (event instanceof Touch ? null : [event.offsetX, event.offsetY])
 const mouse = reactive(useMouse({ target: camera, type: extractor }))
@@ -21,40 +19,37 @@ const { pressed } = useMousePressed({ target: camera })
 
 watch(mouse, ({ x, y }) => {
 
-  let data = new Uint8Array(8)
+  let data = new Uint8Array(10)
+  const LEN = MOUSE_ABS_ACTION_PREFIX.length - 1 // Uint is 0-index
   data.set(MOUSE_ABS_ACTION_PREFIX, 0)
-  data[6] = pressed.value ? lastMousePressState.value : 0
-  data[1] = x & 0xFF; // Set x low byte at index 1
-  data[2] = (x >> 8) & 0xFF; // Set x high byte at index 2
-  data[3] = y & 0xFF; // Set y low byte at index 3
-  data[4] = (y >> 8) & 0xFF; // Set y high byte at index 4
-  data[5] = 0 & 0xFF
-  data[7] = calculateModulo256Checksum(data.slice(0, 7))
-  // console.log(data, data.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), ''), `Checksum: ${data[7]}`)
+  data[LEN + 1] = x & 0xFF; // Set x low byte at index 1
+  data[LEN + 2] = (x >> 8) & 0xFF; // Set x high byte at index 2
+  data[LEN + 3] = y & 0xFF; // Set y low byte at index 3
+  data[LEN + 4] = (y >> 8) & 0xFF; // Set y high byte at index 4
+  data[LEN + 5] = 0 & 0xFF
+  data[LEN + 6] = pressed.value ? lastMousePressState.value : 0
 
   if (serial.value?.writable && writer) {
-    const hex = data.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
-    console.log(hex)
-    writer.value.write(hex)
+    const newRes = checksum(data)
+    const hex = newRes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '')
+    console.log(`Writing ${hex}...`)
+    writer.value?.write(newRes)
   }
 }, { deep: true })
 
 const relativeMouse = ref(false)
 const resolution = ref('')
 
-const highResolution = { width: 1920, height: 1080 };
-const resolutions = [
-  { width: 1920, height: 1080, label: '1920x1080' },
-  { width: 1280, height: 720, label: '1280x720' },
-  { width: 640, height: 480, label: '640x480' },
-  { width: 320, height: 240, label: '320x240' }
-];
-
 onMounted(async () => {
   await refreshMediaDevices()
 })
 
-async function refreshMediaDevices(constraints = Object.assign(webcamConstraints, { video: highResolution })) {
+onBeforeUnmount(async () => {
+  writer.value?.close()
+  reader.value?.releaseLock()
+})
+
+async function refreshMediaDevices(constraints = Object.assign(webcamConstraints, { video: CAMERA_HIGH_RES })) {
   if (camera.value?.srcObject) {
     camera.value.srcObject.getTracks()
       .forEach((track: MediaStreamTrack) => track.stop())
@@ -87,14 +82,45 @@ async function refreshSerialDevices(force: boolean) {
 
   try {
     await serial.value.close()
+  } catch (err) {
+    // Do nothing with this error because we expect it to fail and we want to make sure it's closed before we try and open it.
+  }
+
+  try {
     if (!writer.value) {
       await serial.value.open({ baudRate: SERIAL_DEFAULT_BAUDRATE })
+      writer.value = serial.value.writable.getWriter()
+      writer.value.write(checksum(SERIAL_CMD_GET_PARA_CFG))
+
+      while (writer.value.readable) {
+        reader.value = serial.value.readable.getReader();
+        try {
+          while (true) {
+            const { value, done } = await reader.value.read();
+            if (done) {
+              // |reader| has been canceled.
+              break;
+            }
+            console.log(value)
+          }
+        } catch (error) {
+          console.log(error)
+        } finally {
+          reader.value.releaseLock();
+        }
+      }
+
     }
     console.log(serial.value.getInfo())
     writer.value = serial.value.writable.getWriter()
   } catch (err) {
     console.log(err)
   }
+}
+
+function checksum(serialData: Uint8Array): Uint8Array {
+  const checksum = calculateModulo256Checksum(serialData)
+  return new Uint8Array([...serialData, checksum])
 }
 
 function keypress(data: KeyboardEvent) {
@@ -137,7 +163,7 @@ function getMouseButton(button: number): number {
         <Badge variant="outline">
           Y: {{ mouse.y }}
         </Badge>
-        <Badge variant="default" :class="cn(
+        <Badge :variant="relativeMouse ? 'default' : 'destructive'" :class="cn(
           relativeMouse ? 'bg-green-500' : 'bg-red-500'
         )">
           Relative Mouse
@@ -164,7 +190,6 @@ function getMouseButton(button: number): number {
         </div>
       </div>
     </div>
-    <Separator />
     <div class="container flex h-full flex-col space-y-4" @keydown.prevent="keypress">
       <video ref="camera" class="flex-1" autoplay playsinline @click.left.prevent="click" @click.middle.prevent="click"
         @click.right.prevent="click" />
