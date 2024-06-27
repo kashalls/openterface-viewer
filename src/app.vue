@@ -19,15 +19,13 @@ const { pressed } = useMousePressed({ target: camera })
 
 watch(mouse, ({ x, y }) => {
 
-  let data = new Uint8Array(10)
-  const LEN = MOUSE_ABS_ACTION_PREFIX.length - 1 // Uint is 0-index
-  data.set(MOUSE_ABS_ACTION_PREFIX, 0)
-  data[LEN + 1] = x & 0xFF; // Set x low byte at index 1
-  data[LEN + 2] = (x >> 8) & 0xFF; // Set x high byte at index 2
-  data[LEN + 3] = y & 0xFF; // Set y low byte at index 3
-  data[LEN + 4] = (y >> 8) & 0xFF; // Set y high byte at index 4
-  data[LEN + 5] = 0 & 0xFF
-  data[LEN + 6] = pressed.value ? lastMousePressState.value : 0
+  let data = new Uint8Array(12)
+  const LEN = MOUSE_ABS_ACTION_PREFIX.length // Uint is 0-index
+  data.set(MOUSE_ABS_ACTION_PREFIX, 0) // 0 - 5
+  data.set([pressed.value ? lastMousePressState.value : 0], LEN)
+  data.set([x & 0xFF, (x >> 8) & 0xFF], LEN + 1)
+  data.set([y & 0xFF, (y >> 8) & 0xFF], LEN + 3)
+  data.set([0 & 0xFF], LEN + 5)
 
   if (serial.value?.writable && writer) {
     const newRes = checksum(data)
