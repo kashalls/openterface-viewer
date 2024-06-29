@@ -17,3 +17,11 @@ export const useBrowserDetection = () => {
     isIE: /MSIE|Trident/.test(userAgent),
   };
 }
+
+export const useBrowserSupport = () => {
+  if (!import.meta.client) return { };
+
+  return {
+    supported: "serial" in navigator && "mediaDevices" in navigator
+  }
+}

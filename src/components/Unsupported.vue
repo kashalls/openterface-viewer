@@ -1,7 +1,5 @@
 <script lang="ts" setup>
-const supported = computed(() => {
-  return "serial" in navigator && "mediaDevices" in navigator
-})
+const { supported } = useBrowserSupport()
 </script>
 
 <template>

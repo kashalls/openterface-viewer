@@ -1,14 +1,27 @@
 <script setup lang="ts">
 import type { UseMouseEventExtractor } from '@vueuse/core'
 import { cn } from './lib/utils';
-const webcamConstraints = { audio: true, video: true }
+
+const { supported } = useBrowserSupport()
+
+const mouseEnabled = ref(false)
+const keyboardEnabled = ref(false)
 
 const serial = ref<SerialPort>()
 const writer = ref<WritableStreamDefaultWriter>()
 const reader = ref<ReadableStreamDefaultReader>()
 const camera = ref()
-const extractor: UseMouseEventExtractor = (event) => (event instanceof Touch ? null : [event.offsetX, event.offsetY])
-const mouse = reactive(useMouse({ target: camera, type: extractor }))
+const relativeMouse = ref(false)
+const resolution = ref('')
+
+const keyboardModifiers = ref<number>(0)
+
+const mouse = reactive(useMouse({ 
+  target: camera, 
+  type: ((event) => {
+      return event instanceof TouchEvent || event instanceof Touch ? null : [event.offsetX, event.offsetY]  
+  })
+}))
 const lastMousePressState = ref(0)
 const { pressed } = useMousePressed({ target: camera })
 
@@ -16,45 +29,26 @@ watch(pressed, (isPressed) => {
   if (!isPressed) lastMousePressState.value = 0
 })
 
-function handleMouse(x = mouse.x, y = mouse.y, button = pressed.value ? lastMousePressState.value : 0) {
-  const relativeX = (x / camera.value.clientWidth) * 4096
-  const relativeY = (y / camera.value.clientHeight) * 4096
-
-  const data = new Uint8Array(12)
-  data.set(MOUSE_ABS_ACTION_PREFIX, 0)
-  data.set([button], MOUSE_ABS_ACTION_PREFIX.length)
-  data.set([relativeX & 0xFF, (relativeX >> 8) & 0xFF], MOUSE_ABS_ACTION_PREFIX.length + 1)
-  data.set([relativeY & 0xFF, (relativeY >> 8) & 0xFF], MOUSE_ABS_ACTION_PREFIX.length + 3)
-  data.set([0 & 0xFF], MOUSE_ABS_ACTION_PREFIX.length + 5)
-
-  if (serial.value?.writable && writer) {
-    writer.value?.write(checksum(data))
-  }
-}
-
-watch(mouse, ({ x, y }) => {
-  handleMouse(x, y)
-}, { deep: true })
-
-const relativeMouse = ref(false)
-const resolution = ref('')
+watch(mouse, () => handleMouse(), { deep: true })
 
 onMounted(async () => {
+  window.addEventListener('keyup', (event) => keypress(event, false))
+  window.addEventListener('keydown', (event) => keypress(event, true))
   await refreshMediaDevices()
 })
 
-onBeforeUnmount(async () => {
+onUnmounted(async () => {
   writer.value?.close()
   reader.value?.releaseLock()
 })
 
-async function refreshMediaDevices(constraints = Object.assign(webcamConstraints, { video: CAMERA_HIGH_RES })) {
+async function refreshMediaDevices() {
   if (camera.value?.srcObject) {
     camera.value.srcObject.getTracks()
       .forEach((track: MediaStreamTrack) => track.stop())
   }
 
-  const stream = await navigator.mediaDevices.getUserMedia(constraints)
+  const stream = await navigator.mediaDevices.getUserMedia({ video: CAMERA_HIGH_RES })
   camera.value.srcObject = stream
 
   const videoTrack = stream.getVideoTracks()[0]
@@ -64,6 +58,8 @@ async function refreshMediaDevices(constraints = Object.assign(webcamConstraints
 }
 
 async function refreshSerialDevices(force: boolean) {
+  mouseEnabled.value = false
+  keyboardEnabled.value = false
   // Check to see if the user has previously authorized us to access a usb device.
   const pairedPorts = await navigator.serial.getPorts()
   if (pairedPorts.length === 1) {
@@ -91,27 +87,11 @@ async function refreshSerialDevices(force: boolean) {
       writer.value = serial.value.writable.getWriter()
       writer.value.write(checksum(SERIAL_CMD_GET_PARA_CFG))
 
-      while (serial.value?.readable) {
-        reader.value = serial.value.readable.getReader();
-        try {
-          while (true) {
-            const { value, done } = await reader.value.read();
-            if (done) {
-              // |reader| has been canceled.
-              break;
-            }
-            console.log(value)
-          }
-        } catch (error) {
-          console.log(error)
-        } finally {
-          reader.value.releaseLock();
-        }
-      }
-
+      mouseEnabled.value = true
+      keyboardEnabled.value = true
+    } else {
+      console.log('Todo: Writer is already bound?')
     }
-    console.log(serial.value.getInfo())
-    writer.value = serial.value.writable.getWriter()
   } catch (err) {
     console.log(err)
   }
@@ -132,10 +112,10 @@ function click({ button }: MouseEvent): void {
   handleMouse(mouse.x, mouse.y, qtClick)
 }
 
-function getMouseButton(button: number): number {
-  if (button === 0) { // Left Click
-    return 1 // Qt Left
-  } else if (button === 2) {
+function handleMouse(button: number = pressed.value ? lastMousePressState.value : 0) {
+  const relativeX = (mouse.x / camera.value.clientWidth) * 4096
+  const relativeY = (mouse.y / camera.value.clientHeight) * 4096
+
     return 2 // Qt Right
   } else if (button === 1) {
     return 4 // Qt Middle
