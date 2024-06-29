@@ -16,10 +16,10 @@ const resolution = ref('')
 
 const keyboardModifiers = ref<number>(0)
 
-const mouse = reactive(useMouse({ 
-  target: camera, 
+const mouse = reactive(useMouse({
+  target: camera,
   type: ((event) => {
-      return event instanceof TouchEvent || event instanceof Touch ? null : [event.offsetX, event.offsetY]  
+    return event instanceof TouchEvent || event instanceof Touch ? null : [event.offsetX, event.offsetY]
   })
 }))
 const lastMousePressState = ref(0)
@@ -107,20 +107,23 @@ function keypress(data: KeyboardEvent) {
 }
 
 function click({ button }: MouseEvent): void {
-  const qtClick = getMouseButton(button)
-  lastMousePressState.value = qtClick
-  handleMouse(mouse.x, mouse.y, qtClick)
+  lastMousePressState.value = MOUSE_BUTTON_MAP[button] ?? 0
+  handleMouse(lastMousePressState.value)
 }
 
 function handleMouse(button: number = pressed.value ? lastMousePressState.value : 0) {
   const relativeX = (mouse.x / camera.value.clientWidth) * 4096
   const relativeY = (mouse.y / camera.value.clientHeight) * 4096
 
-    return 2 // Qt Right
-  } else if (button === 1) {
-    return 4 // Qt Middle
-  } else {
-    return 0
+  const data = new Uint8Array(12)
+  data.set(MOUSE_ABS_ACTION_PREFIX, 0)
+  data.set([button], MOUSE_ABS_ACTION_PREFIX.length)
+  data.set([relativeX & 0xFF, (relativeX >> 8) & 0xFF], MOUSE_ABS_ACTION_PREFIX.length + 1)
+  data.set([relativeY & 0xFF, (relativeY >> 8) & 0xFF], MOUSE_ABS_ACTION_PREFIX.length + 3)
+  data.set([0 & 0xFF], MOUSE_ABS_ACTION_PREFIX.length + 5)
+
+  if (serial.value?.writable && writer && mouseEnabled.value) {
+    writer.value?.write(checksum(data))
   }
 }
 
@@ -152,31 +155,61 @@ function handleMouse(button: number = pressed.value ? lastMousePressState.value 
       <div class="ml-auto flex w-full space-x-2 sm:justify-end">
         <div class="hidden space-x-2 md:flex">
           <Unsupported />
-          <Button variant="secondary" @click="refreshMediaDevices">
-            <template v-if="!camera">
-              Request Camera
-            </template>
-            <template v-else>
-              Refresh Media Devices
-            </template>
-          </Button>
-          <Button variant="secondary" @click="refreshSerialDevices(Boolean(serial))">
-            <template v-if="!serial">
-              Connect Serial
-            </template>
-            <template v-else>
-              Refresh Serial Devices
-            </template>
-          </Button>
+          <HoverCard>
+            <HoverCardTrigger as-child>
+              <Button variant="secondary" @click="refreshMediaDevices">
+                {{ camera ? 'Refresh' : 'Request' }} Media Device
+              </Button>
+            </HoverCardTrigger>
+            <HoverCardContent class="w-80 text-sm ">
+              <p class="pb-2">{{ camera ? 'Disconnect & Reconnect' : 'Connects' }} to the Openterface KVM Camera.</p>
+              <p>Helpful if the display is not at the correct resolution or if there are artifacts appearing on-screen.
+              </p>
+            </HoverCardContent>
+          </HoverCard>
+          <HoverCard>
+            <HoverCardTrigger as-child>
+              <Button variant="secondary" @click="refreshSerialDevices(Boolean(serial))">
+                {{ serial ? 'Refresh' : 'Connect' }} Serial Device
+              </Button>
+            </HoverCardTrigger>
+            <HoverCardContent class="w-80 text-sm ">
+              <p class="pb-2">Chrome will not let me automatically request the serial port without a user-interaction.
+              </p>
+              <p>This button is required to enable serial writing to the KVM.</p>
+            </HoverCardContent>
+          </HoverCard>
         </div>
       </div>
     </div>
-    <div class="container flex h-full flex-col space-y-4" @keydown.prevent="keypress">
-      <AspectRatio :ratio="16 / 9" class="bg-muted">
+    <div class="container flex h-full flex-col space-y-4">
+      <AspectRatio :ratio="16 / 9" class="bg-muted" @keydown.prevent="keypress">
         <video ref="camera" class="flex-1" autoplay playsinline @click.left.prevent="click"
           @click.middle.prevent="click" @click.right.prevent="click" />
       </AspectRatio>
-
+    </div>
+    <div class="container flex justify-between py-4">
+      <div class="flex flex-grow-0 gap-2">
+        <Badge :class="cn(
+          'text-white',
+          mouseEnabled ? 'bg-green-700 hover:bg-green-600' : 'bg-red-700 hover:bg-red-600'
+        )" @click="mouseEnabled = !mouseEnabled">
+          <Icon name="radix-icons:cursor-arrow" />
+        </Badge>
+        <Badge :class="cn(
+          'text-white',
+          keyboardEnabled ? 'bg-green-700 hover:bg-green-600' : 'bg-red-700 hover:bg-red-600'
+        )" @click="keyboardEnabled = !keyboardEnabled">
+          <Icon name="radix-icons:keyboard" />
+        </Badge>
+      </div>
+      <div class="justify-end">
+        <Button as-child variant="ghost">
+          <NuxtLink external to="https://github.com/kashalls/openterface-viewer">
+            <Icon name="radix-icons:github-logo" class="w-4 h-4" />
+          </NuxtLink>
+        </Button>
+      </div>
     </div>
   </div>
 </template>
