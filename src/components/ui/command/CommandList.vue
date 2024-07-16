@@ -2,7 +2,7 @@
 import { type HTMLAttributes, computed } from 'vue'
 import type { ComboboxContentEmits, ComboboxContentProps } from 'radix-vue'
 import { ComboboxContent, useForwardPropsEmits } from 'radix-vue'
-import { cn } from '@/lib/utils'
+
 
 const props = withDefaults(defineProps<ComboboxContentProps & { class?: HTMLAttributes['class'] }>(), {
   dismissable: false,

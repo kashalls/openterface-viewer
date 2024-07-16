@@ -2,7 +2,7 @@
 import { type HTMLAttributes, computed } from 'vue'
 import { SelectIcon, SelectTrigger, type SelectTriggerProps, useForwardProps } from 'radix-vue'
 import { CaretSortIcon } from '@radix-icons/vue'
-import { cn } from '@/lib/utils'
+
 
 const props = defineProps<SelectTriggerProps & { class?: HTMLAttributes['class'] }>()
 

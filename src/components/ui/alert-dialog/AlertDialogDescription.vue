@@ -4,7 +4,7 @@ import {
   AlertDialogDescription,
   type AlertDialogDescriptionProps,
 } from 'radix-vue'
-import { cn } from '@/lib/utils'
+
 
 const props = defineProps<AlertDialogDescriptionProps & { class?: HTMLAttributes['class'] }>()
 

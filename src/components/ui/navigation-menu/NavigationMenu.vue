@@ -7,7 +7,7 @@ import {
   useForwardPropsEmits,
 } from 'radix-vue'
 import NavigationMenuViewport from './NavigationMenuViewport.vue'
-import { cn } from '@/lib/utils'
+
 
 const props = defineProps<NavigationMenuRootProps & { class?: HTMLAttributes['class'] }>()
 

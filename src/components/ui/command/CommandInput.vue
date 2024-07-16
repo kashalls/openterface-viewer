@@ -2,7 +2,7 @@
 import { type HTMLAttributes, computed } from 'vue'
 import { MagnifyingGlassIcon } from '@radix-icons/vue'
 import { ComboboxInput, type ComboboxInputProps, useForwardProps } from 'radix-vue'
-import { cn } from '@/lib/utils'
+
 
 defineOptions({
   inheritAttrs: false,
