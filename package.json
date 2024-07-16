@@ -10,8 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@nuxt/icon": "^1.0.0",
-    "@nuxtjs/tailwindcss": "^6.12.0",
+    "@nuxt/ui": "^2.17.0",
     "@radix-icons/vue": "^1.0.0",
     "@vueuse/core": "^10.11.0",
     "@vueuse/nuxt": "^10.11.0",
@@ -34,6 +33,7 @@
     "@iconify-json/radix-icons": "^1.1.14",
     "@nuxtjs/color-mode": "^3.4.2",
     "@types/dom-serial": "^1.0.6",
-    "typescript": "^5.5.2"
+    "typescript": "^5.5.2",
+    "@iconify-json/ph": "^1.1.13"
   }
 }

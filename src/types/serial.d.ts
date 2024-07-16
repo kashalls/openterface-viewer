@@ -34,12 +34,16 @@ interface SerialOptions {
 interface SerialPort extends EventTarget {
     onconnect: EventHandler;
     ondisconnect: EventHandler;
+    readonly connected: boolean;
     readonly readable: ReadableStream; // Chromium implementation (spec: in)
     readonly writable: WritableStream; // Chromium implementation (spec: out)
+
     open(options: SerialOptions): Promise<void>;
-    close(): Promise<void>;
+    setSignals(signals: SerialOutputSignals = {}): Promise<undefined>;
     getInfo(): Partial<SerialPortInfo>;
-    forget(): Promise<void>;
+    getSignals(): Promise<SerialInputSignals>;
+    close(): Promise<undefined>;
+    forget(): Promise<undefined>;
 }
 
 interface SerialPortRequestOptions {
@@ -55,4 +59,17 @@ interface Serial extends EventTarget {
 
 interface Navigator {
     readonly serial: Serial;
+}
+
+interface SerialInputSignals {
+    readonly dataCarrierDetect: boolean;
+    readonly clearToSend: boolean;
+    readonly ringIndicator: boolean;
+    readonly dataSetReady: boolean;
+}
+
+interface SerialOutputSignals {
+    dataTerminalReady: boolean;
+    requestToSend: boolean;
+    break: boolean;
 }
