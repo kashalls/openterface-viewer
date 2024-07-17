@@ -136,7 +136,7 @@ export default function useSerial() {
   };
 
   const handleIncomingData = (data: Uint8Array): void => {
-    const originalData = data.subarray(0, data.length - 2)
+    const originalData = data.subarray(0, data.length - 1)
     const checkSum = data[data.length]
     if (calculateModulo256Checksum(originalData) !== checkSum) {
       console.error(`[Serial][Incoming] Discarding Invalid Data: ${decimalArrayToHexString(data)}`)
