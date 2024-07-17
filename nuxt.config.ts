@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   ],
 
   ui: {
-    icons: ['ph', 'heroicons']
+    icons: ['ph', 'heroicons', 'tabler']
   },
 
   colorMode: {
