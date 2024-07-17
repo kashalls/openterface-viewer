@@ -1,26 +1,19 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  devtools: { enabled: true },
   compatibilityDate: "2024-07-11",
   srcDir: 'src/',
-  devtools: { enabled: true },
-
   modules: [
-    "shadcn-nuxt",
+    "@nuxt/ui",
     '@vueuse/nuxt',
-    "@nuxt/ui"
   ],
 
-  shadcn: {
-    prefix: '',
-    componentDir: './src/components/ui'
+  ui: {
+    icons: ['ph', 'heroicons']
   },
 
   colorMode: {
     fallback: 'dark',
     classSuffix: ''
-  },
-
-  ui: {
-    icons: ['ph'],
   }
 })
