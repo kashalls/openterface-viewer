@@ -113,9 +113,7 @@ async function refreshMediaDevices() {
         <div class="flex h-full flex-col space-y-4 bg-black rounded-lg">
             <WelcomeArt v-if="!viewer" />
             <video v-else ref="camera" class="flex-1" autoplay playsinline @click.left.prevent="handleClick"
-                @click.middle.prevent="handleClick" @click.right.prevent="handleClick">
-                <WelcomeArt />
-            </video>
+                @click.middle.prevent="handleClick" @click.right.prevent="handleClick" />
         </div>
         <div class="flex justify-between py-4">
             <div class="justify-start flex flex-row gap-3">
