@@ -47,7 +47,7 @@ export const WINDOWS_KEYMAP: { [key: string]: number } = {
   'BracketRight': 0x30, // ]
   'Backslash': 0x31, // Backslash
   'Semicolon': 0x33, // ;
-  // 'Quote': 0x34, // '
+  'Quote': 0x34, // '
   'Backquote': 0x35, // `
   'Comma': 0x36, // ,
   'Period': 0x37, // .
@@ -93,12 +93,11 @@ export const WINDOWS_KEYMAP: { [key: string]: number } = {
   'Numpad5': 0x22, // key 5 (%)
   'Numpad6': 0x23, // key 6 (^)
   'Numpad7': 0x24, // key 7 (&)
-  'Numpad8': 0x2A, // key *
+  'Numpad8': 0x25, // key 8 (*)
   'Numpad9': 0x26, // key 9 (()
   'Numpad0': 0x27, // key 0 ())
   'NumpadSubtract': 0x2D, // key -
   'NumpadEqual': 0x2E, // key = // key ;
-  'Quote': 0x34, // key '
 };
 
 // SHIFT keys
