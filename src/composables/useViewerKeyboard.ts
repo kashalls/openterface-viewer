@@ -1,7 +1,19 @@
+import type { ControlKeys } from "~/types/keyboard"
+
 export const useViewerKeyboard = () => {
-    const enabled = ref(false)
+    const enabled = useState<boolean>('keyboard', () => false)
     const toggles = ref<Array<number>>([])
-    const currentModifiers = useState<number>('modifiers')
+    const modifiers = useState<number>('modifiers')
+    const controlKeys = useState<ControlKeys>('control-keys', () => ({
+        windowsRight: false,
+        altRight: false,
+        shiftRight: false,
+        ctrlRight: false,
+        windowsLeft: false,
+        altLeft: false,
+        shiftLeft: false,
+        ctrlLeft: false
+    }))
 
     const { isConnected, write } = useSerial()
 
@@ -15,33 +27,33 @@ export const useViewerKeyboard = () => {
         let mappedKeyCode = WINDOWS_KEYMAP[event.code]
 
         if (WINDOWS_SHIFT_KEYS.includes(event.code) || WINDOWS_CTRL_KEYS.includes(event.code) || WINDOWS_ALT_KEYS.includes(event.code)) {
-            if (currentModifiers.value === 1537) {
+            if (modifiers.value === 1537) {
                 mappedKeyCode = 0xE1;
-                currentModifiers.value |= 0x02;
-            } else if (currentModifiers.value === 1538) {
+                modifiers.value |= 0x02;
+            } else if (modifiers.value === 1538) {
                 mappedKeyCode = 0xE0;
-                currentModifiers.value |= 1538
-            } else if (currentModifiers.value === 1540) {
+                modifiers.value |= 1538
+            } else if (modifiers.value === 1540) {
                 mappedKeyCode = 0xE2;
-                currentModifiers.value |= 0x04;
+                modifiers.value |= 0x04;
             }
         } else {
-            if (currentModifiers.value != 0) {
+            if (modifiers.value != 0) {
                 if (isConnected && enabled.value) write(keyData)
-                currentModifiers.value = 0
+                modifiers.value = 0
             }
 
-            let newModifiers = currentModifiers.value
+            let newModifiers = modifiers.value
 
-            if (event.shiftKey) newModifiers |= 0x02;
-            if (event.ctrlKey) newModifiers |= 0x01;
-            if (event.altKey) newModifiers |= 0x04;
-            if (event.metaKey) newModifiers |= 0x08;
+            if (event.shiftKey || controlKeys.value.shiftLeft) newModifiers |= 0x02;
+            if (event.ctrlKey || controlKeys.value.ctrlLeft) newModifiers |= 0x01;
+            if (event.altKey || controlKeys.value.altLeft) newModifiers |= 0x04;
+            if (event.metaKey || controlKeys.value.windowsLeft) newModifiers |= 0x08;
 
             if (pressed) {
-                combinedModifiers = currentModifiers.value |= newModifiers
+                combinedModifiers = modifiers.value |= newModifiers
             } else {
-                combinedModifiers = currentModifiers.value &= ~combinedModifiers
+                combinedModifiers = modifiers.value &= ~combinedModifiers
             }
 
         }
@@ -56,7 +68,8 @@ export const useViewerKeyboard = () => {
     return {
         enabled,
         toggles,
-        modifiers: currentModifiers,
+        modifiers,
+        controlKeys,
         handleEvent
     }
 }

@@ -1,5 +1,5 @@
 export const useViewerMouse = (camera: Ref) => {
-  const enabled = ref(false)
+  const enabled = useState('mouse', () => false)
   const { pressed } = useMousePressed({ target: camera })
   const lastMousePressState = useState<number>('lastMousePressedState')
 
@@ -13,13 +13,13 @@ export const useViewerMouse = (camera: Ref) => {
   }))
 
   onMounted(() => {
-    watch(pressed, (isPressed) => {
+    watch(pressed, (isPressed: boolean) => {
       if (!isPressed) lastMousePressState.value = 0
     })
 
     watch(mouse, () => handleEvent(), { deep: true })
-    enabled.value = true
   })
+
   const handleEvent = (button: number = pressed.value ? lastMousePressState.value : 0) => {
     if (!enabled.value) return
 
