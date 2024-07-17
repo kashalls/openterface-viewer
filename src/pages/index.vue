@@ -37,19 +37,18 @@ async function refreshMediaDevices() {
             .forEach((track: MediaStreamTrack) => track.stop())
     }
 
-    await navigator.mediaDevices.getUserMedia({ video: CAMERA_HIGH_RES })
+    const stream = await navigator.mediaDevices.getUserMedia({ video: CAMERA_HIGH_RES })
         .catch((err) => console.error(err))
-        .then((stream) => {
-            if (!stream) return;
 
-            viewer.value = true
-            camera.value.srcObject = stream
+    if (!stream) return;
 
-            const videoTrack = stream.getVideoTracks()[0]
-            const settings = videoTrack.getSettings()
+    viewer.value = true
+    camera.value.srcObject = stream
 
-            resolution.value = `${settings.width}x${settings.height} @ ${settings.frameRate}fps`
-        })
+    const videoTrack = stream.getVideoTracks()[0]
+    const settings = videoTrack.getSettings()
+
+    resolution.value = `${settings.width}x${settings.height} @ ${settings.frameRate}fps`
 }
 </script>
 
