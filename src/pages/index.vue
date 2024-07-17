@@ -80,9 +80,9 @@ async function refreshMediaDevices() {
                         <Icon name="radix-icons:exclamation-triangle" class="h-4 w-4" />
                     </UButton>
                     <UTooltip>
-                        <Button variant="outline" @click="refreshMediaDevices">
+                        <UButton variant="outline" @click="refreshMediaDevices">
                             {{ viewer ? 'Refresh' : 'Request' }} Video
-                        </Button>
+                        </UButton>
                         <template #text>
                             <p class="pb-2">{{ camera ? 'Disconnect & Reconnect' : 'Connects' }} to the Openterface KVM
                                 Camera.</p>
@@ -93,12 +93,12 @@ async function refreshMediaDevices() {
                         </template>
                     </UTooltip>
                     <UTooltip>
-                        <Button variant="outline" v-if="isConnected" @click="disconnect">
+                        <UButton variant="outline" v-if="isConnected" @click="disconnect">
                             Disconnect Serial
-                        </Button>
-                        <Button variant="outline" v-else @click="connect">
+                        </UButton>
+                        <UButton variant="outline" v-else @click="connect">
                             Connect Serial
-                        </Button>
+                        </UButton>
                         <template #text>
                             <p class="pb-2">Chrome will not let me automatically request the serial port without a
                                 user-interaction.
