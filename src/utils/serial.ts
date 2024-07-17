@@ -36,3 +36,7 @@ export const SERIAL_COMMAND_MAP: { [key: string]: string } = {
     0x09: "CONFIG",
     0x0F: "RESET"
 }
+
+export function decimalArrayToHexString(data: Uint8Array) {
+    return Array.from(data).map(byte => byte.toString(16).padStart(2, '0')).join(' ').toUpperCase()
+}
