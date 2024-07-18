@@ -6,12 +6,16 @@ const camera = ref()
 const relativeMouse = ref(false)
 const resolution = ref('')
 
+const colorMode = useColorMode()
+const toast = useToast()
 const modal = useModal()
 
 const {
+    enabled: keyboardEnabled,
     handleEvent: handleKeyboardEvent
 } = useViewerKeyboard()
 const {
+    enabled: mouseEnabled,
     mouse,
     handleClick
 } = useViewerMouse(camera)
@@ -24,10 +28,21 @@ const {
 
 const { supported } = useBrowserSupport()
 onMounted(async () => {
-    if (!supported) modal.open(ModalsUnsupportedBrowser)
     window.addEventListener('keyup', (event) => handleKeyboardEvent(event, false))
     window.addEventListener('keydown', (event) => handleKeyboardEvent(event, true))
     await refreshMediaDevices()
+
+    if (!supported) modal.open(ModalsUnsupportedBrowser)
+})
+
+watch(isConnected, (connected) => {
+    if (connected && viewer.value) {
+        keyboardEnabled.value = true
+        mouseEnabled.value = true
+    } else {
+        keyboardEnabled.value = false
+        mouseEnabled.value = false
+    }
 })
 
 async function refreshMediaDevices() {
@@ -37,8 +52,31 @@ async function refreshMediaDevices() {
             .forEach((track: MediaStreamTrack) => track.stop())
     }
 
-    const stream = await navigator.mediaDevices.getUserMedia({ video: CAMERA_HIGH_RES })
-        .catch((err) => console.error(err))
+    const stream = await navigator.mediaDevices.getUserMedia({ video: CAMERA_HIGH_RES, audio: true })
+        .catch((err) => {
+            if (err instanceof DOMException) {
+                if (err.name === 'NotAllowedError') {
+                    toast.add({
+                        title: 'Cannot Show Openterface',
+                        description: 'Unable to request access to your Openterface at this time. Either it is in use, or you have denied permission to use it. You can enable it through the camera button in the url bar.',
+                        timeout: 8000
+                    })
+                } else if (err.name === 'NotFoundError') {
+                    toast.add({
+                        title: 'Openterface Not Found',
+                        description: 'Unable to find your openterface. Is it connected?',
+                        timeout: 8000
+                    })
+                } else {
+                    toast.add({
+                        title: 'Unknown Error',
+                        description: 'We tried to show you the Openterface stream, but something is stopping us.',
+                        timeout: 8000
+                    })
+                }
+            }
+            console.error(`[Camera] ${err}`)
+        })
 
     if (!stream) return;
 
@@ -109,20 +147,20 @@ async function refreshMediaDevices() {
                 </div>
             </div>
         </div>
-        <div class="flex h-full flex-col space-y-4 bg-black rounded-lg">
-            <WelcomeArt v-if="!viewer" />
-            <video v-else ref="camera" class="flex-1" autoplay playsinline @click.left.prevent="handleClick"
-                @click.middle.prevent="handleClick" @click.right.prevent="handleClick" />
+        <div
+            class="flex h-full flex-col bg-primary-600/70 dark:bg-black rounded-lg shadow-2xl border-primary-700 hover:border-primary-950 dark:border-primary-900 hover:dark:border-primary-500 border">
+            <video ref="camera" class="flex-1" autoplay playsinline
+                :poster="`/artwork/welcome-${colorMode.value === 'light' ? 'light' : 'dark'}-spaced.svg`"
+                @click.left.prevent="handleClick" @click.middle.prevent="handleClick"
+                @click.right.prevent="handleClick" />
         </div>
         <div class="flex justify-between py-4">
             <div class="justify-start flex flex-row gap-3">
-                <Test />
-                <UDivider orientation="vertical" />
-                <SpecialKeySelector />
+                <LatchButtons />
             </div>
             <div class="justify-end">
                 <div class="flex flex-grow-0 gap-2">
-                    <UButton icon="i-ph-gear-duotone" variant="ghost" label="Settings"
+                    <UButton icon="i-ph-gear-duotone" variant="ghost" disabled label="Settings"
                         @click="modal.open(ModalsSettings)" />
                     <ColorMode />
                     <UButton icon="i-ph-github-logo-duotone" variant="ghost"

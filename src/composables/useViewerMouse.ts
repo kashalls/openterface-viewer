@@ -21,7 +21,7 @@ export const useViewerMouse = (camera: Ref) => {
   })
 
   const handleEvent = (button: number = pressed.value ? lastMousePressState.value : 0) => {
-    if (!enabled.value) return
+    if (!enabled.value || !isConnected.value) return
 
     const relativeX = (mouse.x / camera.value.clientWidth) * 4096
     const relativeY = (mouse.y / camera.value.clientHeight) * 4096
@@ -37,7 +37,7 @@ export const useViewerMouse = (camera: Ref) => {
   }
 
   const handleClick = ({ button }: MouseEvent) => {
-    lastMousePressState.value = MOUSE_BUTTON_MAP[button] ?? 0
+    lastMousePressState.value = Serial.MOUSE_BUTTON_MAP[button] ?? 0
     handleEvent(lastMousePressState.value)
   }
 

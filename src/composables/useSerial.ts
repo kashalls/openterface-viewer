@@ -9,7 +9,6 @@ export const writer = ref<WritableStreamDefaultWriter>()
 export const reader = ref<ReadableStreamDefaultReader>()
 
 export default function useSerial() {
-  const toast = useToast()
   const state = useState<SerialState>('serial', () => SerialState.Disconnected)
   const lockStatus = useState('serial-lockstatus', () => ({
     num: false,
@@ -36,36 +35,26 @@ export default function useSerial() {
         });
       }
 
-      console.log(port.value)
-
       // Check if the port is already open
       if (!port.value.readable && !port.value.writable) {
 
         console.debug('[Serial][Connect] Attempting to open serial port...')
         // Open the serial port.
-        await port.value.open({ baudRate: SERIAL_DEFAULT_BAUDRATE });
-        const signals = await port.value.getSignals()
-
-        console.debug('[Serial][Connect] Serialport was opened...')
-        console.debug(signals)
+        await port.value.open({ baudRate: Serial.OPENTERFACE_BAUDRATE });
       }
 
       state.value = SerialState.Connected
 
       // Set up the reader.
-      console.debug('[Serial][Connect] Attempting to get a reader...')
       reader.value = port.value?.readable.getReader();
-      console.log(reader.value)
       readLoop();
 
       // Set up the writer.
-      console.debug('[Serial][Connect] Attempting to get a writer...')
       const writeStream = port.value.writable.getWriter();
       await writeStream.ready
       writer.value = writeStream
-      console.log(writer.value)
 
-      write(new Uint8Array([...SERIAL_HEADER, SERIAL_COMMANDS.GetInfo, 0x00]))
+      write(new Uint8Array([...Serial.FRAME_HEAD, Serial.DEFAULT_ADDR, Serial.COMMANDS.CMD_GET_INFO, 0x00]))
     } catch (error) {
       console.error('Error connecting to serial device:', error);
       disconnect();
@@ -77,12 +66,11 @@ export default function useSerial() {
     while (reader.value && state.value === SerialState.Connected) {
       try {
         const { value, done } = await reader.value.read();
-        console.log('[Serial][ReadLoop] Completed Read.')
         if (done) {
           console.log('[Serial][ReadLoop] Done reading...')
           break;
         }
-        console.log(`[Serial][ReadLoop] ${decimalArrayToHexString(value)} - ${value.length}`)
+        console.log(`[Serial][ReadLoop] ${Serial.humanize(value)} - ${value.length}`)
         handleIncomingData(value)
       } catch (error) {
         console.error('Error reading data from serial device:', error);
@@ -123,9 +111,8 @@ export default function useSerial() {
   const write = async (data: Uint8Array): Promise<void> => {
     if (writer.value) {
       try {
-        const type = SERIAL_COMMAND_MAP[data[3]] ?? 'Unknown'
-        const checksumedData = new Uint8Array([...data, calculateModulo256Checksum(data)])
-        console.debug(`[${type}] Writing ${decimalArrayToHexString(checksumedData)}`)
+        const checksumedData = new Uint8Array([...data, Serial.checksum(data)])
+        console.debug(`[Serial] Writing ${Serial.humanize(checksumedData)}`)
         await writer.value.write(checksumedData);
       } catch (error) {
         console.error('[Serial][Write] Error writing data to serial device:', error);
@@ -136,20 +123,14 @@ export default function useSerial() {
   };
 
   const handleIncomingData = (data: Uint8Array): void => {
+    const checkSum = data[data.length - 1]
     const originalData = data.subarray(0, data.length - 1)
-    const checkSum = data[data.length]
-    if (calculateModulo256Checksum(originalData) !== checkSum) {
-      console.error(`[Serial][Incoming] Discarding Invalid Data: ${decimalArrayToHexString(data)}`)
-      toast.add({
-        title: 'Invalid Data Recieved',
-        description: 'Viewer has recieved some invalid data from Openterface. You may need to connect your device to an official viewer to correct this.',
-        icon: 'i-ph-cherries-duotone',
-        color: 'red'
-      })
-      return;
+    if (Serial.checksum(originalData) !== checkSum) {
+      console.error(`[Serial][Incoming] Discarding Invalid Data: ${Serial.humanize(data)}`)
+      return
     }
     // Checking to see if we are getting the RecieveInfo
-    if (data[3] === SERIAL_COMMANDS.RecieveInfo) {
+    if (data[3] === (Serial.COMMANDS.CMD_GET_INFO + 0x80)) {
       const version = `${data[5].toString(16).split('')[1]}`
       const connected = Boolean(data[6])
       const lockStatuses = data[7].toString(2).padStart(3, '0')
