@@ -168,7 +168,5 @@ async function refreshMediaDevices() {
                 </div>
             </div>
         </div>
-        <UModals />
-        <UNotifications />
     </div>
 </template>
