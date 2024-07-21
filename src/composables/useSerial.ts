@@ -6,7 +6,7 @@ export enum SerialState {
 }
 export const port = ref<SerialPort>();
 export const writer = ref<WritableStreamDefaultWriter>()
-export const reader = ref<ReadableStreamDefaultReader>()
+export const reader = ref<ReadableStream>()
 
 export default function useSerial() {
   const state = useState<SerialState>('serial', () => SerialState.Disconnected)
@@ -46,8 +46,9 @@ export default function useSerial() {
       state.value = SerialState.Connected
 
       // Set up the reader.
-      reader.value = port.value?.readable.getReader();
-      readLoop();
+      reader.value = port.value?.readable
+      reader.value.pipeTo(readStream);
+      // readLoop();
 
       // Set up the writer.
       const writeStream = port.value.writable.getWriter();
@@ -61,30 +62,65 @@ export default function useSerial() {
     }
   };
 
-  const readLoop = async () => {
-    console.debug('Starting read cycle')
-    while (reader.value && state.value === SerialState.Connected) {
-      try {
-        const { value, done } = await reader.value.read();
-        if (done) {
-          console.log('[Serial][ReadLoop] Done reading...')
-          break;
+  let readBuffer = new Uint8Array()
+  const readStream = new WritableStream({
+    write(chunk: Uint8Array) {
+      const checkSum = chunk[chunk.length - 1]
+      const originalData = chunk.subarray(0, chunk.length - 1)
+      if (Serial.checksum(originalData) === checkSum) return handleIncomingData(chunk)
+
+      // This chunk is invalid, combine with the other chunks.
+
+      // Discard the packet if the readBuffer is empty and this chunk doesn't start a packet.
+      // We don't know where this data belongs soooo. ¯\_(ツ)_/¯
+      if (readBuffer.length === 0) {
+        const headerIndex = chunk.findIndex((byte, index) => {
+          return byte === 0x57 && chunk[index + 1] === 0xAB
+        })
+        // This chunk data does not contain any header data and the buffer is empty, discard.
+        if (headerIndex === -1) return
+      }
+
+      // Combine the buffers
+      readBuffer = new Uint8Array([...readBuffer, ...chunk])
+
+      // Check how many sutiable packets we might have so we know how many times we need to loop through.
+      const potentialPackets = readBuffer.filter((byte, index) => {
+        return byte === 0x57 && readBuffer[index + 1] === 0xAB
+      })
+
+      // Loop through the packets searching for the first packet. There is a chance that our first header is actual data so we skip to the next iteration.
+      for (let i = 0; i < potentialPackets.length; i++) {
+        const headerIndex = readBuffer.indexOf(0x57)
+
+        // Index not found, yet potential is more than 1?
+        if (headerIndex === -1) continue;
+        // Next byte is not available? 
+        if (!(readBuffer[headerIndex + 1])) continue;
+
+        // If the buffer is undefined at this location
+        const dataLength: number = readBuffer[headerIndex + 4];
+        if (!dataLength) continue;
+
+        const endOfData: number = (headerIndex + 4) + (dataLength + 1) + 1
+        const data: Uint8Array = readBuffer.subarray(headerIndex, endOfData)
+        const dataCheckSum: number = data[data.length - 1]
+        const dataOriginalData: Uint8Array = data.subarray(0, data.length - 1)
+
+        if (Serial.checksum(dataOriginalData) === dataCheckSum) {
+          readBuffer = readBuffer.slice(headerIndex, endOfData)
+          handleIncomingData(data)
         }
-        console.log(`[Serial][ReadLoop] ${Serial.humanize(value)} - ${value.length}`)
-        handleIncomingData(value)
-      } catch (error) {
-        console.error('Error reading data from serial device:', error);
       }
     }
-  };
+  })
 
   const disconnect = async () => {
     state.value = SerialState.Closing
 
     try {
       if (reader.value) {
-        reader.value.releaseLock()
-        await reader.value?.cancel()
+        await reader.value.cancel()
         reader.value = undefined;
       }
 
@@ -112,7 +148,7 @@ export default function useSerial() {
     if (writer.value) {
       try {
         const checksumedData = new Uint8Array([...data, Serial.checksum(data)])
-        console.debug(`[Serial] Writing ${Serial.humanize(checksumedData)}`)
+        console.debug(`[Serial] Writing ${Serial.stringify(checksumedData)}`)
         await writer.value.write(checksumedData);
       } catch (error) {
         console.error('[Serial][Write] Error writing data to serial device:', error);
@@ -126,7 +162,7 @@ export default function useSerial() {
     const checkSum = data[data.length - 1]
     const originalData = data.subarray(0, data.length - 1)
     if (Serial.checksum(originalData) !== checkSum) {
-      console.error(`[Serial][Incoming] Discarding Invalid Data: ${Serial.humanize(data)}`)
+      console.error(`[Serial][Incoming] Discarding Invalid Data: ${Serial.stringify(data)}`)
       return
     }
     // Checking to see if we are getting the RecieveInfo
@@ -138,6 +174,10 @@ export default function useSerial() {
       console.log(`Connected to Openterface. CH9329 v1.${version}`)
       console.log(`NumLock: ${lockStatuses[2] === '1'} | CapsLock: ${lockStatuses[1] === '1'} | ScrollLock: ${lockStatuses[0] === '1'}`)
     }
+  }
+
+  const handleMediaKeys = (byte: number): void => {
+    
   }
 
   onBeforeUnmount(async () => {
@@ -152,6 +192,7 @@ export default function useSerial() {
     connect,
     disconnect,
     write,
+    handleMediaKeys,
     lockStatus,
     isConnected
   };
