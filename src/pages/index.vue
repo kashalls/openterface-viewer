@@ -60,7 +60,7 @@ watch(isConnected, (connected) => {
 
             </div>
             <div class="ml-auto flex w-full space-x-2 sm:justify-end">
-                <div class="hidden space-x-2 md:flex">
+                <div class="space-x-2 flex">
                     <UButton variant="soft" color="red" class="animate-pulse" v-if="!supported"
                         @click="modal.open(ModalsUnsupportedBrowser)">
                         <span class="sr-only">Unsupported Browser</span>
