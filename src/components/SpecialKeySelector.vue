@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const selected = ref([])
+const selected = ref<Array<string>>([])
 
 function getFunctionKeys() {
     const fnKeys = [] as Array<object>;
@@ -17,8 +17,16 @@ function getFunctionKeys() {
 const keys = computed(() => {
     return [...getFunctionKeys()]
 })
+
+const onUpdate = (elements: string[]) => {
+    if (elements.length > 5) return;
+    selected.value = elements
+}
 </script>
 
 <template>
-    <USelectMenu v-model="selected" :options="keys" multiple placeholder="Select keys" />
+    <div class="grid grid-cols-4 gap-2 *:justify-center">
+        <UButton v-for="key in keys"
+            :label="key.label" variant="outline" color="green" />
+    </div>
 </template>
