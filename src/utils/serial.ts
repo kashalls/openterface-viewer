@@ -86,15 +86,15 @@ export class Serial {
     }
 
     /**
-     * Makes data more human readable.
+     * Converts Uint8Array into string
      * 
      * @param data The data sent/recieved.
      * @returns String of hex bytes.
      */
-    static humanize(data: Uint8Array) {
-        return Array.from(data).map(byte => byte.toString(16).padStart(2, '0')).join(' ').toUpperCase()
+    static stringify(data: Uint8Array) {
+        return Array.from(data).map(byte => byte.toString(16).padStart(2, '0')).join('').toUpperCase()
     }
-    
+
     /**
      * Checks to see if the command we are sending/recieving is valid.
      * 
