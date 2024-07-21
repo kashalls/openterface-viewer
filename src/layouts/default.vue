@@ -16,7 +16,5 @@ useHead({
 <template>
     <div>
         <slot />
-        <UModals />
-        <UNotifications />
     </div>
 </template>
