@@ -2,25 +2,33 @@
 const keyboard = useState('keyboard', () => false)
 const mouse = useState('mouse', () => false)
 const hostToggle = useState('host-toggle', () => false)
+const { enabled, connect, disconnect } = useViewerMedia()
+
+function handleMonitorToggle () {
+    if (enabled.value) disconnect()
+    else connect()
+}
 </script>
 
 <template>
-    <div class="flex flex-row  items-center content-center select-none gap-0.5">
-        <UTooltip text="Monitor Status">
-            <UButton icon="i-ph-monitor-duotone" size="xl" :padded="true" color="primary" square variant="ghost" />
+    <div class="flex flex-row  items-center content-center select-none gap-x-1.5">
+        <UTooltip text="Host / Target Toggle" class="justify-center place-items-center">
+            <UToggle size="lg" disabled v-model="hostToggle" on-icon="i-tabler-letter-t" off-icon="i-tabler-letter-h" />
         </UTooltip>
-        <UTooltip text="Keyboard Status">
-            <UButton icon="i-ph-keyboard-duotone" size="xl" :padded="true" :color="keyboard ? 'green' : 'red'" square
-                variant="ghost" @click="keyboard = !keyboard" />
+        
+        <UTooltip text="Toggle Monitor Status">
+            <UButton icon="i-ph-monitor-duotone" size="md" square variant="outline"
+                @click="handleMonitorToggle" :color="enabled ? 'green' : 'red'" />
         </UTooltip>
 
-        <UButton icon="i-ph-mouse-simple-duotone" size="xl" :padded="true" :color="mouse ? 'green' : 'red'" square
-            variant="ghost" @click="mouse = !mouse" />
+        <UTooltip text="Toggle Keyboard Status">
+            <UButton icon="i-ph-keyboard-duotone" size="md" :padded="true" :color="keyboard ? 'green' : 'red'" square
+                variant="outline" @click="keyboard = !keyboard" />
+        </UTooltip>
 
-        <UDivider orientation="vertical" />
-
-        <UTooltip text="Host / Target Toggle" class="gap-0.5 justify-center place-items-center">
-            <UToggle size="lg" v-model="hostToggle" on-icon="i-tabler-letter-t" off-icon="i-tabler-letter-h" />
+        <UTooltip text="Toggle Mouse Status">
+            <UButton icon="i-ph-mouse-simple-duotone" size="md" :padded="true" :color="mouse ? 'green' : 'red'"
+                variant="outline" @click="mouse = !mouse" />
         </UTooltip>
     </div>
 </template>
