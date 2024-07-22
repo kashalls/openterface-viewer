@@ -7,7 +7,8 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "start": "nuxt start"
   },
   "dependencies": {
     "@iconify-json/heroicons": "^1.1.22",
@@ -19,6 +20,7 @@
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.397.0",
     "nuxt": "^3.12.3",
+    "serialport": "^12.0.0",
     "tailwind-merge": "^2.3.0"
   },
   "devDependencies": {

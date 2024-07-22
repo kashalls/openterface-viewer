@@ -15,5 +15,12 @@ export default defineNuxtConfig({
   colorMode: {
     fallback: 'dark',
     classSuffix: ''
+  },
+
+  runtimeConfig: {
+    public: {
+      VERSION: process.env["VERSION"],
+      REVISION: process.env["REVISION"]
+    }
   }
 })
