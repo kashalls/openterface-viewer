@@ -5,7 +5,7 @@ export const MOUSE_REL_ACTION_PREFIX = new Uint8Array([0x57, 0xAB, 0x00, 0x05, 0
 // Keyboard Action Prefix
 export const KEYBOARD_ACTION_PREFIX = new Uint8Array([0x57, 0xAB, 0x00, 0x02, 0x08])
 
-export class Serial {
+export class SerialHelper {
     static readonly FRAME_HEAD = new Uint8Array([0x57, 0xAB]);
     static readonly DEFAULT_ADDR = 0x00;
 

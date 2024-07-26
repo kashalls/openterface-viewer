@@ -5,9 +5,13 @@ export const useBrowserSupport = () => {
 
   const isPages = Boolean("CF_PAGES_COMMIT_SHA" in process.env)
 
+  const serial = "serial" in navigator;
+  const usb = "usb" in navigator;
+  const media = "mediaDevices" in navigator;
+
   return {
-    supported: "serial" in navigator && "mediaDevices" in navigator,
-    isPages,
+    serial, usb, media,
+    supported: Boolean(serial && usb && media),
     commitSha: isPages ? process.env["CF_PAGES_COMMIT_SHA"] : config.public.VERSION
   }
 }

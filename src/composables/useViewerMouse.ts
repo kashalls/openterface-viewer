@@ -37,7 +37,7 @@ export const useViewerMouse = (camera: Ref) => {
   }
 
   const handleClick = ({ button }: MouseEvent) => {
-    lastMousePressState.value = Serial.MOUSE_BUTTON_MAP[button] ?? 0
+    lastMousePressState.value = SerialHelper.MOUSE_BUTTON_MAP[button] ?? 0
     handleEvent(lastMousePressState.value)
   }
 

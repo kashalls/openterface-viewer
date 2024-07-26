@@ -15,6 +15,11 @@ useHead({
 
 <template>
     <div>
-        <slot />
+        <UContainer :ui="{ constrained: 'max-w-[94rem]' }">
+            <NuxtPage />
+        </UContainer>
+
+        <UModals />
+        <UNotifications />
     </div>
 </template>

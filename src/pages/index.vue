@@ -1,90 +1,44 @@
 <script setup lang="ts">
-import { ModalsSettings, ModalsUnsupportedBrowser } from '#components';
-
-const viewer = ref(false)
-const camera = ref()
-const resolution = ref('')
+import { ModalCopyPasteMenu, ModalSettings, ModalUnsupportedBrowser } from '#components';
 
 const colorMode = useColorMode()
 const modal = useModal()
-
+const camera = ref()
 const {
-    enabled: keyboardEnabled,
     handleEvent: handleKeyboardEvent
 } = useViewerKeyboard()
 const {
-    enabled: mouseEnabled,
     mouse,
     handleClick
 } = useViewerMouse(camera)
 
-useViewerMedia()
 
-const {
-    isConnected,
-    connect,
-    disconnect
-} = useSerial()
-
-const { supported } = useBrowserSupport()
+const { supported, commitSha } = useBrowserSupport()
 onMounted(async () => {
     window.addEventListener('keyup', (event) => handleKeyboardEvent(event, false))
     window.addEventListener('keydown', (event) => handleKeyboardEvent(event, true))
-    if (!supported) modal.open(ModalsUnsupportedBrowser)
 })
-
-watch(isConnected, (connected) => {
-    if (connected && viewer.value) {
-        keyboardEnabled.value = true
-        mouseEnabled.value = true
-    } else {
-        keyboardEnabled.value = false
-        mouseEnabled.value = false
-    }
-})
-
 </script>
 
 <template>
-    <div class="mx-auto px-4 sm:px-6 lg:px-8 max-w-[96rem] transition-all">
+    <div>
         <div
-            class="flex flex-row items-start justify-between space-y-2 py-4 sm:flex-row sm:items-center sm:space-y-0 md:h-16">
-            <div class="flex flex-row mr-auto w-full gap-2">
-                <h2 class="text-lg font-semibold justify-center self-center">
+            class="flex flex-row items-center justify-between space-y-2 py-2 sm:flex-row sm:items-center sm:space-y-0 md:h-12">
+            <div class="inline-flex flex-stretch-0 w-full gap-2 justify-start">
+                <h2 class="text-md font-semibold justify-center self-center">
                     Openterface Viewer
                 </h2>
+                <UBadge variant="soft">{{ commitSha }}</UBadge>
+
             </div>
             <div class="flex flex-row w-full justify-center gap-1">
-                <UBadge variant="soft" v-if="resolution">{{ resolution }}</UBadge>
+
                 <UBadge variant="soft">X: {{ mouse.x }}, Y: {{ mouse.y }}</UBadge>
 
             </div>
             <div class="ml-auto flex w-full space-x-2 sm:justify-end">
                 <div class="space-x-2 flex">
-                    <UButton variant="soft" color="red" class="animate-pulse" v-if="!supported"
-                        @click="modal.open(ModalsUnsupportedBrowser)">
-                        <span class="sr-only">Unsupported Browser</span>
-                        <Icon name="radix-icons:exclamation-triangle" class="h-4 w-4" />
-                    </UButton>
-                    <UTooltip>
-                        <UButton variant="outline" v-if="isConnected" @click="disconnect" icon="i-tabler-plug-connected">
-                            Disconnect Serial
-                        </UButton>
-                        <UButton variant="outline" v-else @click="connect" icon="i-tabler-plug">
-                            Connect Serial
-                        </UButton>
-                        <template #text>
-                            <p class="pb-2">Chrome will not let me automatically request the serial port without a
-                                user-interaction.
-                            </p>
-                            <p>This button is required to enable serial writing to the KVM.</p>
-                        </template>
-                    </UTooltip>
-                    <UButton icon="i-ph-gear-duotone" variant="ghost" disabled label="Settings"
-                        @click="modal.open(ModalsSettings)" />
-                    <ColorMode />
-                    <UButton icon="i-ph-github-logo-duotone" variant="ghost"
-                        to="https://github.com/kashalls/openterface-viewer" />
+                    <InputToggles />
                 </div>
             </div>
         </div>
@@ -99,8 +53,14 @@ watch(isConnected, (connected) => {
             <div class="flex flex-row gap-2 justify-start">
                 <LatchButtons />
             </div>
-            <div class="justify-end">
-                <InputToggles />
+            <div class="justify-end gap-x-1">
+                <UButton variant="soft" color="red" icon="i-radix-icons-exclamation-triangle" class="animate-pulse"
+                    v-if="!supported" @click="modal.open(ModalUnsupportedBrowser)" />
+                <UButton icon="i-ph-gear-duotone" variant="ghost" label="Settings" @click="modal.open(ModalSettings)" />
+                <UButton icon="i-ph-copy-simple-duotone" variant="ghost" @click="modal.open(ModalCopyPasteMenu)" disabled />
+                <ColorMode />
+                <UButton icon="i-ph-github-logo-duotone" variant="ghost"
+                    to="https://github.com/kashalls/openterface-viewer" target="_blank" />
             </div>
         </div>
     </div>

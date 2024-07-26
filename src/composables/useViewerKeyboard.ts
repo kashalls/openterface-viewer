@@ -13,12 +13,10 @@ export const useViewerKeyboard = () => {
     const { isConnected, write } = useSerial()
 
     const handleEvent = (event: KeyboardEvent, pressed: boolean): void => {
-        event.preventDefault()
-
         if (!enabled.value || !isConnected.value) return
 
         const keyData = new Uint8Array(13)
-        keyData.set([...Serial.FRAME_HEAD, Serial.DEFAULT_ADDR, Serial.COMMANDS.CMD_SEND_KB_GENERAL_DATA, Serial.CMD_LENGTH.CMD_SEND_KB_GENERAL_DATA], 0)
+        keyData.set([...SerialHelper.FRAME_HEAD, SerialHelper.DEFAULT_ADDR, SerialHelper.COMMANDS.CMD_SEND_KB_GENERAL_DATA, SerialHelper.CMD_LENGTH.CMD_SEND_KB_GENERAL_DATA], 0)
 
         let combinedModifiers = 0
         let mappedKeyCode = WINDOWS_KEYMAP[event.code]

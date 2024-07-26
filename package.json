@@ -19,13 +19,15 @@
     "@vueuse/nuxt": "^10.11.0",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.397.0",
-    "nuxt": "^3.12.3",
-    "serialport": "^12.0.0",
+    "nuxt": "^3.12.4",
     "tailwind-merge": "^2.3.0"
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
     "@types/dom-serial": "^1.0.6",
+    "@types/w3c-web-hid": "^1.0.6",
+    "@types/w3c-web-serial": "^1.0.6",
+    "@types/w3c-web-usb": "^1.0.10",
     "typescript": "^5.5.2"
   }
 }

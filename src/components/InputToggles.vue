@@ -2,11 +2,25 @@
 const keyboard = useState('keyboard', () => false)
 const mouse = useState('mouse', () => false)
 const hostToggle = useState('host-toggle', () => false)
-const { enabled, connect, disconnect } = useViewerMedia()
+const { enabled, connect: viewerConnect, disconnect: viewerDisconnect } = useViewerMedia()
+const { isConnected, connect: serialConnect, disconnect: serialDisconnect } = useSerial()
 
-function handleMonitorToggle () {
-    if (enabled.value) disconnect()
-    else connect()
+async function handleMonitorToggle() {
+    if (enabled.value) {
+        await viewerDisconnect()
+    } else {
+        await viewerConnect()
+    }
+
+    if (isConnected.value) {
+        keyboard.value = false
+        mouse.value = false
+        await serialDisconnect()
+    } else {
+        await serialConnect()
+        keyboard.value = true
+        mouse.value = true
+    }
 }
 </script>
 
@@ -15,10 +29,11 @@ function handleMonitorToggle () {
         <UTooltip text="Host / Target Toggle" class="justify-center place-items-center">
             <UToggle size="lg" disabled v-model="hostToggle" on-icon="i-tabler-letter-t" off-icon="i-tabler-letter-h" />
         </UTooltip>
-        
+
         <UTooltip text="Toggle Monitor Status">
-            <UButton icon="i-ph-monitor-duotone" size="md" square variant="outline"
-                @click="handleMonitorToggle" :color="enabled ? 'green' : 'red'" />
+            <UButton icon="i-ph-monitor-duotone" size="md" square variant="outline" @click="handleMonitorToggle"
+                :color="enabled ? 'green' : 'red'">
+            </UButton>
         </UTooltip>
 
         <UTooltip text="Toggle Keyboard Status">

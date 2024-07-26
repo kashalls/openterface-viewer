@@ -1,3 +1,5 @@
+/// <reference types="w3c-web-serial" />
+
 export enum SerialState {
   Disconnected,
   Opening,
@@ -5,8 +7,8 @@ export enum SerialState {
   Connected
 }
 export const port = ref<SerialPort>();
-export const writer = ref<WritableStreamDefaultWriter>()
-export const reader = ref<ReadableStream>()
+export const writer = ref<WritableStreamDefaultWriter | null>()
+export const reader = ref<ReadableStream | null>()
 
 export default function useSerial() {
   const state = useState<SerialState>('serial', () => SerialState.Disconnected)
@@ -15,7 +17,6 @@ export default function useSerial() {
     caps: false,
     scroll: false
   }))
-
 
   const connect = async () => {
     if (state.value !== SerialState.Disconnected) return;
@@ -37,25 +38,24 @@ export default function useSerial() {
 
       // Check if the port is already open
       if (!port.value.readable && !port.value.writable) {
-
         console.debug('[Serial][Connect] Attempting to open serial port...')
         // Open the serial port.
-        await port.value.open({ baudRate: Serial.OPENTERFACE_BAUDRATE });
+        await port.value.open({ baudRate: SerialHelper.OPENTERFACE_BAUDRATE });
       }
 
       state.value = SerialState.Connected
 
       // Set up the reader.
-      reader.value = port.value?.readable
-      reader.value.pipeTo(readStream);
+      reader.value = port.value.readable
+      reader.value?.pipeTo(readStream);
       // readLoop();
 
       // Set up the writer.
-      const writeStream = port.value.writable.getWriter();
-      await writeStream.ready
+      const writeStream = port.value.writable?.getWriter();
+      await writeStream?.ready
       writer.value = writeStream
 
-      write(new Uint8Array([...Serial.FRAME_HEAD, Serial.DEFAULT_ADDR, Serial.COMMANDS.CMD_GET_INFO, 0x00]))
+      write(new Uint8Array([...SerialHelper.FRAME_HEAD, SerialHelper.DEFAULT_ADDR, SerialHelper.COMMANDS.CMD_GET_INFO, 0x00]))
     } catch (error) {
       console.error('Error connecting to serial device:', error);
       disconnect();
@@ -67,7 +67,7 @@ export default function useSerial() {
     write(chunk: Uint8Array) {
       const checkSum = chunk[chunk.length - 1]
       const originalData = chunk.subarray(0, chunk.length - 1)
-      if (Serial.checksum(originalData) === checkSum) return handleIncomingData(chunk)
+      if (SerialHelper.checksum(originalData) === checkSum) return handleIncomingData(chunk)
 
       // This chunk is invalid, combine with the other chunks.
 
@@ -107,7 +107,7 @@ export default function useSerial() {
         const dataCheckSum: number = data[data.length - 1]
         const dataOriginalData: Uint8Array = data.subarray(0, data.length - 1)
 
-        if (Serial.checksum(dataOriginalData) === dataCheckSum) {
+        if (SerialHelper.checksum(dataOriginalData) === dataCheckSum) {
           readBuffer = readBuffer.slice(headerIndex, endOfData)
           handleIncomingData(data)
         }
@@ -147,8 +147,8 @@ export default function useSerial() {
   const write = async (data: Uint8Array): Promise<void> => {
     if (writer.value) {
       try {
-        const checksumedData = new Uint8Array([...data, Serial.checksum(data)])
-        console.debug(`[Serial] Writing ${Serial.stringify(checksumedData)}`)
+        const checksumedData = new Uint8Array([...data, SerialHelper.checksum(data)])
+        console.debug(`[Serial] Writing ${SerialHelper.stringify(checksumedData)}`)
         await writer.value.write(checksumedData);
       } catch (error) {
         console.error('[Serial][Write] Error writing data to serial device:', error);
@@ -161,12 +161,12 @@ export default function useSerial() {
   const handleIncomingData = (data: Uint8Array): void => {
     const checkSum = data[data.length - 1]
     const originalData = data.subarray(0, data.length - 1)
-    if (Serial.checksum(originalData) !== checkSum) {
-      console.error(`[Serial][Incoming] Discarding Invalid Data: ${Serial.stringify(data)}`)
+    if (SerialHelper.checksum(originalData) !== checkSum) {
+      console.error(`[Serial][Incoming] Discarding Invalid Data: ${SerialHelper.stringify(data)}`)
       return
     }
     // Checking to see if we are getting the RecieveInfo
-    if (data[3] === (Serial.COMMANDS.CMD_GET_INFO + 0x80)) {
+    if (data[3] === (SerialHelper.COMMANDS.CMD_GET_INFO + 0x80)) {
       const version = `${data[5].toString(16).split('')[1]}`
       const connected = Boolean(data[6])
       const lockStatuses = data[7].toString(2).padStart(3, '0')
