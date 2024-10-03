@@ -1,20 +1,20 @@
-# Nuxt 3 Minimal Starter
+# openterface-viewer
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Openterface Viewer is a open source alternative to the open source [Openterface-QT](https://github.com/TechxArtisanStudio/Openterface_QT) that requires it to be installed to a machine. Openterface Viewer works in Chromium-based browers using the [WebUSB API](https://developer.mozilla.org/en-US/docs/Web/API/WebUSB_API) which is commonly used with Google products to restore devices that offer a serial connection over USB.
+
+This project is a WIP and may break between device versions. 
+
+TechXArtisan has provided me a beta device to build this with, but otherwise has no control over what is implemented here. I am not affiliated with TechXArtisan other than being a community dev hero.
 
 ## Setup
+
+In development, I use [bun.sh](https://bun.sh/) as my alternative npm installer. You can install this with [brew.sh](https://brew.sh/) or through their scripts. This will likely work with npm or other alternatives.
 
 Make sure to install the dependencies:
 
 ```bash
 # npm
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
 
 # bun
 bun install
@@ -28,12 +28,6 @@ Start the development server on `http://localhost:3000`:
 # npm
 npm run dev
 
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
 # bun
 bun run dev
 ```
@@ -46,12 +40,6 @@ Build the application for production:
 # npm
 npm run build
 
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
 # bun
 bun run build
 ```
@@ -61,12 +49,6 @@ Locally preview production build:
 ```bash
 # npm
 npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
 
 # bun
 bun run preview
