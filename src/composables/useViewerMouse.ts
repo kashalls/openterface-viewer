@@ -18,9 +18,11 @@ export const useViewerMouse = (camera: Ref) => {
     })
 
     watch(mouse, () => handleEvent(), { deep: true })
+
+    useEventListener(camera, 'wheel', (ev) => handleWheel(ev));
   })
 
-  const handleEvent = (button: number = pressed.value ? lastMousePressState.value : 0) => {
+  const handleEvent = (button: number = pressed.value ? lastMousePressState.value : 0, wheel: number = 0) => {
     if (!enabled.value || !isConnected.value) return
 
     const relativeX = (mouse.x / camera.value.clientWidth) * 4096
@@ -31,7 +33,7 @@ export const useViewerMouse = (camera: Ref) => {
     data.set([button], MOUSE_ABS_ACTION_PREFIX.length)
     data.set([relativeX & 0xFF, (relativeX >> 8) & 0xFF], MOUSE_ABS_ACTION_PREFIX.length + 1)
     data.set([relativeY & 0xFF, (relativeY >> 8) & 0xFF], MOUSE_ABS_ACTION_PREFIX.length + 3)
-    data.set([0 & 0xFF], MOUSE_ABS_ACTION_PREFIX.length + 5)
+    data.set([wheel & 0xFF], MOUSE_ABS_ACTION_PREFIX.length + 5)
 
     if (isConnected && enabled.value) write(data)
   }
@@ -39,6 +41,11 @@ export const useViewerMouse = (camera: Ref) => {
   const handleClick = ({ button }: MouseEvent) => {
     lastMousePressState.value = SerialHelper.MOUSE_BUTTON_MAP[button] ?? 0
     handleEvent(lastMousePressState.value)
+  }
+
+  const handleWheel = (event: WheelEvent) => {
+    const isDown = event.deltaY > 0
+    handleEvent(undefined, isDown ? 0xFF : 0x01)
   }
 
   return {
