@@ -26,9 +26,13 @@ async function handleMonitorToggle() {
 
 <template>
     <div class="flex flex-row  items-center content-center select-none gap-x-1.5">
-        <UTooltip text="Host / Target Toggle" class="justify-center place-items-center">
+        <UTooltip text="Host / Target Toggle" class="justify-center place-items-center hidden">
             <UToggle size="lg" disabled v-model="hostToggle" on-icon="i-tabler-letter-t" off-icon="i-tabler-letter-h" />
         </UTooltip>
+
+        <UBadge variant="solid" color="white">
+            Use these buttons to enable your Openterface >
+        </UBadge>
 
         <UTooltip text="Toggle Monitor Status">
             <UButton icon="i-ph-monitor-duotone" size="md" square variant="outline" @click="handleMonitorToggle"
