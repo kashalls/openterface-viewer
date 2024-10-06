@@ -11,8 +11,8 @@ WORKDIR /app
 
 COPY . .
 RUN bun install
-RUN bun run build
+RUN bunx nuxi@latest build
 
 USER bun
 EXPOSE 3000/tcp
-CMD ["bun", "run", "start"]
+CMD ["bun", "run", ".output/server/index.mjs"]
