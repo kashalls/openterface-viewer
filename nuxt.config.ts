@@ -19,6 +19,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
+      SERVER: Boolean(process.env["VIEWER_SERVER"]),
       VERSION: process.env["VERSION"] ?? 'Dev',
       REVISION: process.env["REVISION"]
     }

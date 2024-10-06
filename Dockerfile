@@ -1,10 +1,11 @@
-FROM alpine:3.18 as builder
-ARG PKG=github.com/kashalls/openterface-viwer
+FROM alpine:3.18
+ARG PKG=github.com/kashalls/openterface-viewer
 ARG VERSION=dev
 ARG REVISION=dev
 
-ENV VERSION=$VERSION
-ENV REVISION=$REVISION
+ENV NUXT_PUBLIC_VERSION=$VERSION
+ENV NUXT_PUBLIC_REVISION=$REVISION
+ENV NUXT_PUBLIC_SERVER=true
 
 WORKDIR /app
 
