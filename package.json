@@ -11,23 +11,23 @@
     "start": "nuxt start"
   },
   "dependencies": {
-    "@iconify-json/heroicons": "^1.1.22",
-    "@iconify-json/ph": "^1.1.13",
-    "@iconify-json/tabler": "^1.1.117",
-    "@nuxt/ui": "^2.17.0",
-    "@vueuse/core": "^10.11.0",
-    "@vueuse/nuxt": "^10.11.0",
+    "@iconify-json/heroicons": "^1.2.1",
+    "@iconify-json/ph": "^1.2.1",
+    "@iconify-json/tabler": "^1.2.10",
+    "@nuxt/ui": "^2.20.0",
+    "@vueuse/core": "^10.11.1",
+    "@vueuse/nuxt": "^10.11.1",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.397.0",
-    "nuxt": "^3.12.4",
-    "tailwind-merge": "^2.3.0"
+    "nuxt": "^3.14.1592",
+    "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
     "@types/dom-serial": "^1.0.6",
     "@types/w3c-web-hid": "^1.0.6",
-    "@types/w3c-web-serial": "^1.0.6",
+    "@types/w3c-web-serial": "^1.0.7",
     "@types/w3c-web-usb": "^1.0.10",
-    "typescript": "^5.5.2"
+    "typescript": "^5.7.2"
   }
 }

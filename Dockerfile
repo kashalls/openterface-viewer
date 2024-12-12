@@ -1,4 +1,5 @@
-FROM oven/bun:1.1.29 AS base
+FROM oven/bun:canary-distroless AS base
+
 ARG PKG=github.com/kashalls/openterface-viewer
 ARG VERSION=dev
 ARG REVISION=dev
