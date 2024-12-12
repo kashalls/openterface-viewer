@@ -28,11 +28,10 @@ onMounted(async () => {
                 <h2 class="text-md font-semibold justify-center self-center">
                     Openterface Viewer
                 </h2>
-                <UBadge variant="soft">{{ commitSha }}</UBadge>
+                <UBadge variant="soft">X: {{ mouse.x }}, Y: {{ mouse.y }}</UBadge>
+
             </div>
             <div class="flex flex-row w-full justify-center gap-1">
-
-                <UBadge variant="soft">X: {{ mouse.x }}, Y: {{ mouse.y }}</UBadge>
 
             </div>
             <div class="ml-auto flex w-full space-x-2 sm:justify-end">
