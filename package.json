@@ -18,7 +18,7 @@
     "@vueuse/core": "^10.11.1",
     "@vueuse/nuxt": "^10.11.1",
     "clsx": "^2.1.1",
-    "lucide-vue-next": "^0.397.0",
+    "lucide-vue-next": "^0.468.0",
     "nuxt": "^3.14.1592",
     "tailwind-merge": "^2.5.5"
   },
