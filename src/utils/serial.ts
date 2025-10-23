@@ -10,7 +10,12 @@ export class SerialHelper {
     static readonly DEFAULT_ADDR = 0x00;
 
     static readonly FACTORY_BAUDRATE = 9600;
-    static readonly OPENTERFACE_BAUDRATE = 115200;
+    
+    static readonly MINIKVM_PID = 0x7523;
+    static readonly MINIKVM_BAUDRATE = 115200;
+
+    static readonly KVMGO_PID = 0xFE0C;
+    static readonly KVMGO_BAUDRATE = 9600;
 
     static readonly COMMANDS = {
         CMD_GET_INFO: 0x01,
