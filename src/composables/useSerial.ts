@@ -39,8 +39,16 @@ export default function useSerial() {
       // Check if the port is already open
       if (!port.value.readable && !port.value.writable) {
         console.debug('[Serial][Connect] Attempting to open serial port...')
-        // Open the serial port.
-        await port.value.open({ baudRate: SerialHelper.OPENTERFACE_BAUDRATE });
+
+        const { usbProductId } = port.value.getInfo();
+        console.log(`[Serial][Connect] Detected USB Product ID: ${usbProductId}`);
+        if (usbProductId === SerialHelper.KVMGO_PID) {
+          await port.value.open({ baudRate: SerialHelper.KVMGO_BAUDRATE });
+        } else if (usbProductId === SerialHelper.MINIKVM_PID) {
+          await port.value.open({ baudRate: SerialHelper.MINIKVM_BAUDRATE });
+        } else {
+          await port.value.open({ baudRate: SerialHelper.FACTORY_BAUDRATE });
+        }
       }
 
       state.value = SerialState.Connected

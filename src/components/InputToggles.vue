@@ -28,12 +28,12 @@ async function handleMonitorToggle() {
 
 function handleKeyboardToggle() {
     if (!supported) return
-    keyboard = !keyboard
+    keyboard.value = !keyboard.value
 }
 
 function handleMouseToggle() {
     if (!supported) return
-    mouse = !mouse
+    mouse.value = !mouse.value
 }
 </script>
 
