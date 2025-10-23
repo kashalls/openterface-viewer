@@ -34,6 +34,8 @@ export default function useSerial() {
         port.value = await navigator.serial.requestPort({
           filters: [{ usbVendorId: 0x1A86 }]
         });
+
+        console.log(port.value.getInfo());
       }
 
       // Check if the port is already open
