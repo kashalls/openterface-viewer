@@ -19,7 +19,7 @@
     "@vueuse/nuxt": "^12.0.0",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.468.0",
-    "nuxt": "^3.14.1592",
+    "nuxt": "^4.0.0",
     "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {
