@@ -1,15 +1,18 @@
 <script setup lang="ts">
-const { controlKeys } = useViewerKeyboard()
+import { useThrottleFn } from '@vueuse/core'
 
+const { controlKeys } = useViewerKeyboard()
 const { write, isConnected } = useSerial()
 
 const packet = new Uint8Array([...SerialHelper.FRAME_HEAD, SerialHelper.DEFAULT_ADDR, SerialHelper.COMMANDS.CMD_SEND_KB_MEDIA_DATA])
 const noTone = new Uint8Array([0x02, 0x00, 0x00, 0x00])
-async function handleMediaButton(byte: Array<number>) {
-    if (!isConnected) return;
+
+
+const handleMediaButton = useThrottleFn(async (byte: Array<number>) => {
+    if (!isConnected) return
     await write(new Uint8Array([...packet, ...byte]))
     await write(new Uint8Array([...packet, ...noTone]))
-}
+}, 1000)
 
 </script>
 
@@ -17,11 +20,13 @@ async function handleMediaButton(byte: Array<number>) {
     <div class="flex flex-row gap-3 *:shadow">
         <UFieldGroup size="md">
             <UTooltip text="Try Power Button">
-                <UButton @click="handleMediaButton([0x02, 0x01, 0x01])" variant="outline" color="error" icon="i-tabler-power" />
+                <UButton @click="handleMediaButton([0x02, 0x01, 0x01])" variant="outline" color="error"
+                    icon="i-tabler-power" />
             </UTooltip>
 
             <UTooltip text="Try Waking">
-                <UButton @click="handleMediaButton([0x02, 0x01, 0x04])" variant="outline" color="error" icon="i-tabler-sun" />
+                <UButton @click="handleMediaButton([0x02, 0x01, 0x04])" variant="outline" color="error"
+                    icon="i-tabler-sun" />
             </UTooltip>
 
             <UTooltip text="Try Sleeping">
@@ -59,16 +64,17 @@ async function handleMediaButton(byte: Array<number>) {
         </UFieldGroup>
 
         <UFieldGroup size="md">
-            <UButton @click="handleMediaButton([0x04, 0x02, 0x04, 0x00, 0x00])" icon="i-tabler-volume-3" variant="outline"
-                color="info" />
-            <UButton @click="handleMediaButton([0x04, 0x02, 0x02, 0x00, 0x00])" icon="i-tabler-volume-2" variant="outline"
-                color="info" />
+            <UButton @click="handleMediaButton([0x04, 0x02, 0x04, 0x00, 0x00])" icon="i-tabler-volume-3"
+                variant="outline" color="info" />
+            <UButton @click="handleMediaButton([0x04, 0x02, 0x02, 0x00, 0x00])" icon="i-tabler-volume-2"
+                variant="outline" color="info" />
             <UButton @click="handleMediaButton([0x04, 0x02, 0x01, 0x00, 0x00])" icon="i-tabler-volume" variant="outline"
                 color="info" />
         </UFieldGroup>
 
         <UPopover :popper="{ placement: 'top' }" disabled>
-            <UButton color="success" disabled variant="outline" icon="i-tabler-function" trailing-icon="i-tabler-chevron-up" />
+            <UButton color="success" disabled variant="outline" icon="i-tabler-function"
+                trailing-icon="i-tabler-chevron-up" />
 
             <template #content>
                 <div class="p-4">
