@@ -114,12 +114,13 @@ export class SerialHelper {
         if (!valid) return true; 
 
         // Unfinished and untested code.
-        const commandCode = data[3]
+        const commandCode = data[3];
         // Is the command code referring to a Error Response Packet?
-        if (commandCode >= 0xC0) return true
+        if (typeof commandCode === 'undefined') return true;
+        if (commandCode >= 0xC0) return true;
         if (commandCode >= 0x80) {
             // This should return the original code.
-            const originalCode = commandCode - 0x80
+            const originalCode = commandCode - 0x80;
             // const packet = Object.keys(this.COMMANDS).find((key) => this.COMMANDS[key] === originalCode)
         }
         return false

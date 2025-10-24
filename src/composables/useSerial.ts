@@ -37,7 +37,7 @@ export default function useSerial() {
       }
 
       // Check if the port is already open
-      if (!port.value.readable && !port.value.writable) {
+      if (port.value && !port.value.readable && !port.value.writable) {
         console.debug('[Serial][Connect] Attempting to open serial port...')
 
         const { usbProductId } = port.value.getInfo();
@@ -54,14 +54,19 @@ export default function useSerial() {
       state.value = SerialState.Connected
 
       // Set up the reader.
-      reader.value = port.value.readable
-      reader.value?.pipeTo(readStream);
+      if (port.value && port.value.readable) {
+        reader.value = port.value.readable;
+        reader.value?.pipeTo(readStream);
+      }
       // readLoop();
 
       // Set up the writer.
-      const writeStream = port.value.writable?.getWriter();
-      await writeStream?.ready
-      writer.value = writeStream
+      let writeStream: WritableStreamDefaultWriter | undefined;
+      if (port.value && port.value.writable) {
+        writeStream = port.value.writable.getWriter();
+        await writeStream.ready;
+      }
+      writer.value = writeStream || null;
 
       write(new Uint8Array([...SerialHelper.FRAME_HEAD, SerialHelper.DEFAULT_ADDR, SerialHelper.COMMANDS.CMD_GET_INFO, 0x00]))
     } catch (error) {
@@ -107,12 +112,12 @@ export default function useSerial() {
         if (!(readBuffer[headerIndex + 1])) continue;
 
         // If the buffer is undefined at this location
-        const dataLength: number = readBuffer[headerIndex + 4];
+        const dataLength: number = readBuffer[headerIndex + 4] ?? 0;
         if (!dataLength) continue;
 
         const endOfData: number = (headerIndex + 4) + (dataLength + 1) + 1
         const data: Uint8Array = readBuffer.subarray(headerIndex, endOfData)
-        const dataCheckSum: number = data[data.length - 1]
+        const dataCheckSum: number = data[data.length - 1] ?? 0
         const dataOriginalData: Uint8Array = data.subarray(0, data.length - 1)
 
         if (SerialHelper.checksum(dataOriginalData) === dataCheckSum) {
@@ -175,9 +180,10 @@ export default function useSerial() {
     }
     // Checking to see if we are getting the RecieveInfo
     if (data[3] === (SerialHelper.COMMANDS.CMD_GET_INFO + 0x80)) {
-      const version = `${data[5].toString(16).split('')[1]}`
+      const versionSplit = typeof data[5] !== 'undefined' ? data[5].toString(16).split('') : ['0', '0'];
+      const version = `${versionSplit[1] ?? ''}`
       const connected = Boolean(data[6])
-      const lockStatuses = data[7].toString(2).padStart(3, '0')
+      const lockStatuses = data[7] !== undefined ? data[7].toString(2).padStart(3, '0') : '000'
       lockStatus.value = { num: lockStatuses[2] === '1', caps: lockStatuses[1] === '1', scroll: lockStatuses[0] === '1' }
       console.log(`Connected to Openterface. CH9329 v1.${version}`)
       console.log(`NumLock: ${lockStatuses[2] === '1'} | CapsLock: ${lockStatuses[1] === '1'} | ScrollLock: ${lockStatuses[0] === '1'}`)
