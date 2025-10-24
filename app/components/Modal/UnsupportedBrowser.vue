@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-const modal = useModal()
+const emit = defineEmits<{ close: [boolean] }>()
 </script>
 
 <template>
@@ -20,8 +20,8 @@ const modal = useModal()
       </div>
       <template #footer>
         <div class="flex">
-          <UButton label="Browser Compatibility" color="gray" href="https://developer.mozilla.org/en-US/docs/Web/API/SerialPort#browser_compatibility" />
-          <UButton label="I Understand" color="orange" @click="modal.close()" class="ml-auto" />
+          <UButton label="Browser Compatibility" color="neutral" href="https://developer.mozilla.org/en-US/docs/Web/API/SerialPort#browser_compatibility" />
+          <UButton label="I Understand" color="primary" @click="emit('close', true)" class="ml-auto" />
         </div>
       </template>
     </UCard>

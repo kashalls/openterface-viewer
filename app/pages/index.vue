@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ModalCopyPasteMenu, ModalSettings, ModalUnsupportedBrowser } from '#components';
+import { LazyModalCopyPasteMenu, LazyModalSettings, ModalUnsupportedBrowser } from '#components';
 
+const overlay = useOverlay()
 const colorMode = useColorMode()
-const modal = useModal()
+
 const camera = ref()
 const {
     handleEvent: handleKeyboardEvent
@@ -18,6 +19,10 @@ onMounted(async () => {
     window.addEventListener('keyup', (event) => handleKeyboardEvent(event, false))
     window.addEventListener('keydown', (event) => handleKeyboardEvent(event, true))
 })
+
+const unsupportedBrowser = overlay.create(ModalUnsupportedBrowser)
+const settings = overlay.create(LazyModalSettings)
+const copyPasteMenu = overlay.create(LazyModalCopyPasteMenu)
 </script>
 
 <template>
@@ -36,8 +41,8 @@ onMounted(async () => {
             </div>
             <div class="ml-auto flex w-full space-x-2 sm:justify-end">
                 <div class="space-x-2 flex">
-                    <UButton size="xs" variant="soft" color="orange" icon="i-radix-icons-exclamation-triangle"
-                        class="animate-pulse" v-if="!supported" @click="modal.open(ModalUnsupportedBrowser)">Camera Only
+                    <UButton size="xs" variant="soft" color="primary" icon="i-radix-icons-exclamation-triangle"
+                        class="animate-pulse" v-if="!supported" @click="unsupportedBrowser.open()">Camera Only
                     </UButton>
                     <InputToggles />
                 </div>
@@ -55,9 +60,8 @@ onMounted(async () => {
                 <LatchButtons />
             </div>
             <div class="justify-end gap-x-1">
-                <UButton icon="i-ph-gear-duotone" variant="ghost" label="Settings" @click="modal.open(ModalSettings)" />
-                <UButton icon="i-ph-copy-simple-duotone" variant="ghost" @click="modal.open(ModalCopyPasteMenu)"
-                    disabled />
+                <UButton icon="i-ph-gear-duotone" variant="ghost" label="Settings" @click="settings.open()" />
+                <UButton icon="i-ph-copy-simple-duotone" variant="ghost" @click="copyPasteMenu.open()" disabled />
                 <ColorMode />
                 <UButton icon="i-ph-github-logo-duotone" variant="ghost"
                     to="https://github.com/kashalls/openterface-viewer" target="_blank" />

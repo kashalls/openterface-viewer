@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const modal = useModal()
+const emit = defineEmits<{ close: [boolean] }>()
 const mouseModes = ['Absolute', 'Relative']
 const mouseMode = ref('Absolute')
 
@@ -25,34 +25,26 @@ const device = computed({
 </script>
 
 <template>
-    <UModal>
-        <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
-            <template #header>
-                <h1 class="font-semibold text-lg">Settings</h1>
-            </template>
+    <UModal :close="{ onClick: () => emit('close', false) }" :ui="{ footer: 'justify-between' }" title="Settings"
+        description="Configure how this application interacts with your devices.">
 
+        <template #body>
             <div class="grid grid-flow-row grid-cols-2 gap-4">
-                <UFormGroup label="Openterface Camera">
+                <UFormField label="Openterface Camera">
                     <USelectMenu v-model="device" :options="options" option-attribute="label" />
-                </UFormGroup>
-                <UFormGroup label="Mouse Mode">
+                </UFormField>
+                <UFormField label="Mouse Mode">
                     <USelectMenu v-model="mouseMode" :options="mouseModes" disabled />
-                </UFormGroup>
-                <UFormGroup label="Keyboard Layout">
+                </UFormField>
+                <UFormField label="Keyboard Layout">
                     <USelectMenu v-model="keyFormatSelected" :options="keyFormat" disabled />
-                </UFormGroup>
+                </UFormField>
             </div>
+        </template>
 
-            <template #footer>
-                <div class="flex flex-row justify-between">
-                    <div class="justify-start">
-                        <UButton label="Forget Devices" variant="ghost" color="red" />
-                    </div>
-                    <div class="justify-end">
-                        <UButton label="Save" @click="modal.close()" />
-                    </div>
-                </div>
-            </template>
-        </UCard>
+        <template #footer="{ close }">
+            <UButton label="Forget Devices" variant="ghost" color="error" />
+            <UButton label="Save" color="success" />
+        </template>
     </UModal>
 </template>

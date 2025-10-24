@@ -15,22 +15,22 @@ async function handleMediaButton(byte: Array<number>) {
 
 <template>
     <div class="flex flex-row gap-3 *:shadow">
-        <UButtonGroup size="md">
+        <UFieldGroup size="md">
             <UTooltip text="Try Power Button">
-                <UButton @click="handleMediaButton([0x02, 0x01, 0x01])" variant="outline" color="red" icon="i-tabler-power" />
+                <UButton @click="handleMediaButton([0x02, 0x01, 0x01])" variant="outline" color="error" icon="i-tabler-power" />
             </UTooltip>
 
             <UTooltip text="Try Waking">
-                <UButton @click="handleMediaButton([0x02, 0x01, 0x04])" variant="outline" color="red" icon="i-tabler-sun" />
+                <UButton @click="handleMediaButton([0x02, 0x01, 0x04])" variant="outline" color="error" icon="i-tabler-sun" />
             </UTooltip>
 
             <UTooltip text="Try Sleeping">
-                <UButton @click="handleMediaButton([0x02, 0x01, 0x02])" variant="outline" color="red"
+                <UButton @click="handleMediaButton([0x02, 0x01, 0x02])" variant="outline" color="error"
                     icon="i-tabler-moon-stars" />
             </UTooltip>
-        </UButtonGroup>
+        </UFieldGroup>
 
-        <UButtonGroup size="md">
+        <UFieldGroup size="md">
             <UTooltip text="Toggle Shift Key">
                 <UButton @click="controlKeys.shift = !controlKeys.shift"
                     :variant="controlKeys.shift ? 'solid' : 'outline'">SHIFT</UButton>
@@ -47,30 +47,30 @@ async function handleMediaButton(byte: Array<number>) {
                 <UButton @click="controlKeys.windows = !controlKeys.windows"
                     :variant="controlKeys.windows ? 'solid' : 'outline'" icon="i-tabler-brand-windows" />
             </UTooltip>
-        </UButtonGroup>
+        </UFieldGroup>
 
-        <UButtonGroup size="md">
+        <UFieldGroup size="md">
             <UButton @click="handleMediaButton([0x04, 0x02, 0x20, 0x00, 0x00])" icon="i-tabler-chevrons-left"
-                variant="outline" color="indigo" />
+                variant="outline" color="info" />
             <UButton @click="handleMediaButton([0x04, 0x02, 0x08, 0x00, 0x00])" icon="i-ph-play-pause-duotone"
-                variant="outline" color="indigo" />
+                variant="outline" color="info" />
             <UButton @click="handleMediaButton([0x04, 0x02, 0x10, 0x00, 0x00])" icon="i-tabler-chevrons-right"
-                variant="outline" color="indigo" />
-        </UButtonGroup>
+                variant="outline" color="info" />
+        </UFieldGroup>
 
-        <UButtonGroup size="md">
+        <UFieldGroup size="md">
             <UButton @click="handleMediaButton([0x04, 0x02, 0x04, 0x00, 0x00])" icon="i-tabler-volume-3" variant="outline"
-                color="indigo" />
+                color="info" />
             <UButton @click="handleMediaButton([0x04, 0x02, 0x02, 0x00, 0x00])" icon="i-tabler-volume-2" variant="outline"
-                color="indigo" />
+                color="info" />
             <UButton @click="handleMediaButton([0x04, 0x02, 0x01, 0x00, 0x00])" icon="i-tabler-volume" variant="outline"
-                color="indigo" />
-        </UButtonGroup>
+                color="info" />
+        </UFieldGroup>
 
         <UPopover :popper="{ placement: 'top' }" disabled>
-            <UButton color="green" disabled variant="outline" icon="i-tabler-function" trailing-icon="i-tabler-chevron-up" />
+            <UButton color="success" disabled variant="outline" icon="i-tabler-function" trailing-icon="i-tabler-chevron-up" />
 
-            <template #panel>
+            <template #content>
                 <div class="p-4">
                     <SpecialKeySelector />
                 </div>
