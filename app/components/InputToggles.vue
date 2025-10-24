@@ -39,27 +39,27 @@ function handleMouseToggle() {
 
 <template>
     <div class="flex flex-row  items-center content-center select-none gap-x-1.5">
-        <UButtonGroup size="sm" orientation="horizontal">
+        <UFieldGroup size="sm" orientation="horizontal">
             <UTooltip text="Host / Target Toggle" class="justify-center place-items-center hidden">
-                <UToggle size="lg" disabled v-model="hostToggle" on-icon="i-tabler-letter-t"
+                <USwitch size="lg" disabled v-model="hostToggle" on-icon="i-tabler-letter-t"
                     off-icon="i-tabler-letter-h" />
             </UTooltip>
 
             <UTooltip text="Toggle Monitor Capture">
                 <UButton icon="i-ph-monitor-duotone" size="md" square variant="outline" @click="handleMonitorToggle"
-                    :color="enabled ? 'green' : 'red'">
+                    :color="enabled ? 'success' : 'error'">
                 </UButton>
             </UTooltip>
 
             <UTooltip text="Toggle Keyboard Capture">
-                <UButton icon="i-ph-keyboard-duotone" size="md" :padded="true" :color="keyboard ? 'green' : 'red'"
+                <UButton icon="i-ph-keyboard-duotone" size="md" :padded="true" :color="keyboard ? 'success' : 'error'"
                     square variant="outline" @click="handleKeyboardToggle" />
             </UTooltip>
 
             <UTooltip text="Toggle Mouse Capture">
-                <UButton icon="i-ph-mouse-simple-duotone" size="md" :padded="true" :color="mouse ? 'green' : 'red'"
+                <UButton icon="i-ph-mouse-simple-duotone" size="md" :padded="true" :color="mouse ? 'success' : 'error'"
                     variant="outline" @click="handleMouseToggle" />
             </UTooltip>
-        </UButtonGroup>
+        </UFieldGroup>
     </div>
 </template>

@@ -14,12 +14,7 @@ useHead({
 </script>
 
 <template>
-    <div>
-        <UContainer :ui="{ constrained: 'max-w-[94rem]' }">
-            <NuxtPage />
-        </UContainer>
-
-        <UModals />
-        <UNotifications />
-    </div>
+    <UContainer>
+        <NuxtPage />
+    </UContainer>
 </template>
