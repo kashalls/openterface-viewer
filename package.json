@@ -23,7 +23,7 @@
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
-    "@nuxt/devtools": "^2.6.5",
+    "@nuxt/devtools": "^3.0.0",
     "@types/dom-serial": "^1.0.6",
     "@types/node": "^24.9.1",
     "@types/w3c-web-hid": "^1.0.6",
