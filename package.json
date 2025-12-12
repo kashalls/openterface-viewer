@@ -25,7 +25,7 @@
   "devDependencies": {
     "@nuxt/devtools": "^3.0.0",
     "@types/dom-serial": "^1.0.6",
-    "@types/node": "^24.9.1",
+    "@types/node": "^25.0.0",
     "@types/w3c-web-hid": "^1.0.6",
     "@types/w3c-web-serial": "^1.0.8",
     "@types/w3c-web-usb": "^1.0.13",
