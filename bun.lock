@@ -12,7 +12,7 @@
         "@vueuse/core": "^14.0.0",
         "@vueuse/nuxt": "^14.0.0",
         "clsx": "^2.1.1",
-        "lucide-vue-next": "^0.553.0",
+        "lucide-vue-next": "^0.561.0",
         "nuxt": "^4.1.3",
         "tailwind-merge": "^3.3.1",
       },
@@ -1038,7 +1038,7 @@
 
     "lru-cache": ["lru-cache@10.4.3", "", {}, "sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ=="],
 
-    "lucide-vue-next": ["lucide-vue-next@0.553.0", "", { "peerDependencies": { "vue": ">=3.0.1" } }, "sha512-0tg9XT+VCElTT+7EXXbBRhWe1nU7Doa32Xv/dHP5/LCleFVgV6cAqziM3C7AetqmsYIsfAtNwRYdtvs4Ds7aUg=="],
+    "lucide-vue-next": ["lucide-vue-next@0.561.0", "", { "peerDependencies": { "vue": ">=3.0.1" } }, "sha512-c5HUckO0qHklVSOf/0vaSR3pEb8fYImRDCRDLde56uqS9js0D/e3RAvq0/YFWjkmyOBKCb0/IdskdoHZQEkT5g=="],
 
     "magic-regexp": ["magic-regexp@0.10.0", "", { "dependencies": { "estree-walker": "^3.0.3", "magic-string": "^0.30.12", "mlly": "^1.7.2", "regexp-tree": "^0.1.27", "type-level-regexp": "~0.1.17", "ufo": "^1.5.4", "unplugin": "^2.0.0" } }, "sha512-Uly1Bu4lO1hwHUW0CQeSWuRtzCMNO00CmXtS8N6fyvB3B979GOEEeAkiTUDsmbYLAbvpUS/Kt5c4ibosAzVyVg=="],
 
