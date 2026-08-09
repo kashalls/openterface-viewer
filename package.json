@@ -29,6 +29,6 @@
     "@types/w3c-web-hid": "^1.0.6",
     "@types/w3c-web-serial": "^1.0.8",
     "@types/w3c-web-usb": "^1.0.13",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.0"
   }
 }
